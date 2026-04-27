@@ -7,12 +7,19 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # Compile options
 add_compile_options(-Wall -Wextra -Wpedantic -ffp-contract=off)
 
+# Sanitizer configuration
+if(FC_ENABLE_SANITIZERS)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.github/sanitizers.cmake)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/.github/sanitizers.cmake)
+    endif()
+endif()
+
 # Add platform submodule
 add_subdirectory(modules/platform EXCLUDE_FROM_ALL)
 
 # Stats module sources
 set(STATS_SOURCES
-    src/stats.c
+    src/mean_var.c
 )
 
 # Create object library
@@ -29,9 +36,9 @@ target_compile_definitions(finkit_stats PRIVATE FC_STATIC_BUILD)
 
 # Set compile flags for SIMD variants in stats.c
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    set_source_files_properties(src/stats.c PROPERTIES COMPILE_FLAGS "-msse4.2 -mavx2")
+    set_source_files_properties(src/mean_var.c PROPERTIES COMPILE_FLAGS "-msse4.2 -mavx2 -mfma")
 elseif(MSVC)
-    set_source_files_properties(src/stats.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+    set_source_files_properties(src/mean_var.c PROPERTIES COMPILE_FLAGS "/arch:AVX2")
 endif()
 
 # Create static library

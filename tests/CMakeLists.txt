@@ -7,6 +7,7 @@ add_executable(stats_tests
     test_framework.c
     test_main.c
     test_stats.c
+    test_mean_var.c
 )
 
 # Link with stats library

@@ -23,6 +23,7 @@ target_link_libraries(bench_framework
 add_executable(stats_benchmarks
     bench_main.c
     bench_stats.c
+    bench_mean_var.c
 )
 
 # Link with benchmark framework and stats library
