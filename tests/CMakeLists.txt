@@ -33,6 +33,11 @@ target_include_directories(stats_tests
 # Compiler flags for tests
 target_compile_options(stats_tests PRIVATE -Wall -Wextra -Wpedantic)
 
+# Add AVX2 flags if supported
+if(FC_SIMD_LEVEL STREQUAL "AVX2" OR FC_SIMD_LEVEL STREQUAL "AVX512")
+    target_compile_options(stats_tests PRIVATE -mavx2 -mfma)
+endif()
+
 # Run tests with ctest
 add_test(
     NAME "stats_tests"

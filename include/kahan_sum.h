@@ -18,16 +18,28 @@
  * Time Complexity: O(n)
  * Space Complexity: O(1)
  * Thread Safety: Reentrant (no shared state)
+ *
+ * IMPORTANT COMPILER REQUIREMENTS:
+ * - Requires IEEE 754 compliant floating-point arithmetic
+ * - DO NOT compile with -ffast-math, -Ofast, or -fassociative-math flags
+ * - These flags break the algorithm by reordering floating-point operations
+ * - FMA (Fused Multiply-Add) instructions must NOT be used in compensation calculation
+ * - The specific operation sequence (t - sum) - y is critical for correctness
+ *
+ * LIMITATIONS:
+ * - Does not prevent overflow or underflow
+ * - Infinity values may produce NaN due to compensation arithmetic (Inf - Inf)
+ * - NaN values propagate through the sum
+ * - For even higher accuracy, consider Kahan-Babuška-Neumaier algorithm
  */
 
 #ifndef FC_KAHAN_SUM_H
 #define FC_KAHAN_SUM_H
 
 #include <stddef.h>
+#include "../../platform/include/platform.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+FC_BEGIN_DECLS
 
 /**
  * @brief Compute sum of array using Kahan compensated summation
@@ -127,8 +139,6 @@ void fc_stat_kahan_add_batch(fc_kahan_state_t* state, const double* data, size_t
  */
 double fc_stat_kahan_get_sum(const fc_kahan_state_t* state);
 
-#ifdef __cplusplus
-}
-#endif
+FC_END_DECLS
 
 #endif /* FC_KAHAN_SUM_H */

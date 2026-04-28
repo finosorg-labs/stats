@@ -29,7 +29,7 @@ FC_BEGIN_DECLS
 /**
  * @brief Compute mean of a single array
  *
- * Uses Kahan summation for numerical stability.
+ * Uses Kahan summation for numerical stability in SIMD implementations.
  *
  * Time complexity: O(n)
  * Space complexity: O(1)
@@ -52,7 +52,9 @@ FC_API fc_status_t fc_stats_mean_f64(
 /**
  * @brief Compute variance of a single array
  *
- * Uses Welford's online algorithm for numerical stability.
+ * Scalar implementation uses Welford's online algorithm for numerical stability.
+ * SIMD implementations use two-pass algorithm (mean first, then variance) for
+ * better vectorization efficiency. Both approaches provide good numerical stability.
  * Computes sample variance by default (divides by n-1).
  *
  * Time complexity: O(n)
@@ -79,7 +81,8 @@ FC_API fc_status_t fc_stats_variance_f64(
  * @brief Compute mean and variance simultaneously
  *
  * More efficient than calling mean and variance separately.
- * Uses Welford's online algorithm for numerical stability.
+ * Scalar implementation uses Welford's online algorithm for numerical stability.
+ * SIMD implementations use two-pass algorithm for better vectorization.
  *
  * Time complexity: O(n)
  * Space complexity: O(1)
@@ -107,7 +110,8 @@ FC_API fc_status_t fc_stats_mean_variance_f64(
  * @brief Compute standard deviation of a single array
  *
  * Convenience function that computes sqrt(variance).
- * Uses Welford's algorithm internally.
+ * Scalar implementation uses Welford's algorithm internally.
+ * SIMD implementations use two-pass algorithm.
  *
  * Time complexity: O(n)
  * Space complexity: O(1)
