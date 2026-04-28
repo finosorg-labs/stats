@@ -37,6 +37,7 @@ add_subdirectory(modules/platform EXCLUDE_FROM_ALL)
 # Stats module sources
 set(STATS_SOURCES
     src/mean_var.c
+    src/kahan_sum.c
 )
 
 # Create object library

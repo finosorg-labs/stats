@@ -24,6 +24,7 @@ add_executable(stats_benchmarks
     bench_main.c
     bench_stats.c
     bench_mean_var.c
+    bench_kahan_sum.c
 )
 
 # Link with benchmark framework and stats library

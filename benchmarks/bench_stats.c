@@ -7,10 +7,12 @@
 
 /* External benchmark runner functions */
 extern void bench_mean_var_run(void);
+extern void bench_kahan_sum_run(void);
 
 /**
  * @brief Run all stats benchmarks
  */
 void bench_stats_run(void) {
     bench_mean_var_run();
+    bench_kahan_sum_run();
 }

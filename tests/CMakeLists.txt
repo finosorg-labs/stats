@@ -8,6 +8,7 @@ add_executable(stats_tests
     test_main.c
     test_stats.c
     test_mean_var.c
+    test_kahan_sum.c
 )
 
 # Link with stats library

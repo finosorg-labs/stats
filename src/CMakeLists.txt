@@ -5,6 +5,7 @@
 # Stats module sources
 set(STATS_SOURCES
     mean_var.c
+    kahan_sum.c
 )
 
 # Create object library for stats module

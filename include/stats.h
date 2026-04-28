@@ -10,6 +10,7 @@
 #define FC_STATS_H
 
 #include "mean_var.h"
+#include "kahan_sum.h"
 
 #ifdef __cplusplus
 extern "C" {
