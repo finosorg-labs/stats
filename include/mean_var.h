@@ -21,8 +21,8 @@
 #ifndef FC_STATS_MEAN_VAR_H
 #define FC_STATS_MEAN_VAR_H
 
-#include "../../platform/include/platform.h"
 #include "../../platform/include/error.h"
+#include "../../platform/include/platform.h"
 
 FC_BEGIN_DECLS
 
@@ -43,11 +43,7 @@ FC_BEGIN_DECLS
  * @note Thread-safe
  * @note Handles NaN: returns FC_ERR_NAN_INPUT if any element is NaN
  */
-FC_API fc_status_t fc_stats_mean_f64(
-    const double* data,
-    size_t n,
-    double* mean
-);
+FC_API fc_status_t fc_stats_mean_f64(const double* data, size_t n, double* mean);
 
 /**
  * @brief Compute variance of a single array
@@ -70,12 +66,8 @@ FC_API fc_status_t fc_stats_mean_f64(
  * @note Thread-safe
  * @note Handles NaN: returns FC_ERR_NAN_INPUT if any element is NaN
  */
-FC_API fc_status_t fc_stats_variance_f64(
-    const double* data,
-    size_t n,
-    double* variance,
-    int sample
-);
+FC_API fc_status_t
+fc_stats_variance_f64(const double* data, size_t n, double* variance, int sample);
 
 /**
  * @brief Compute mean and variance simultaneously
@@ -126,12 +118,7 @@ FC_API fc_status_t fc_stats_mean_variance_f64(
  * @note Thread-safe
  * @note Handles NaN: returns FC_ERR_NAN_INPUT if any element is NaN
  */
-FC_API fc_status_t fc_stats_stddev_f64(
-    const double* data,
-    size_t n,
-    double* stddev,
-    int sample
-);
+FC_API fc_status_t fc_stats_stddev_f64(const double* data, size_t n, double* stddev, int sample);
 
 /**
  * @brief Batch compute mean for multiple arrays
@@ -153,12 +140,8 @@ FC_API fc_status_t fc_stats_stddev_f64(
  * @note Handles NaN: returns FC_ERR_NAN_INPUT if any element is NaN
  * @note All input arrays must have the same length n
  */
-FC_API fc_status_t fc_stats_mean_batch_f64(
-    const double* const* data,
-    size_t n,
-    size_t num_arrays,
-    double* means
-);
+FC_API fc_status_t
+fc_stats_mean_batch_f64(const double* const* data, size_t n, size_t num_arrays, double* means);
 
 /**
  * @brief Batch compute variance for multiple arrays

@@ -10,8 +10,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CompilerFlags.cmake)
 
 # Sanitizer configuration
 if(FC_ENABLE_SANITIZERS)
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.github/sanitizers.cmake)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/.github/sanitizers.cmake)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sanitizers.cmake)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/sanitizers.cmake)
     endif()
 endif()
 
@@ -36,8 +36,8 @@ add_subdirectory(modules/platform EXCLUDE_FROM_ALL)
 
 # Stats module sources
 set(STATS_SOURCES
-    src/mean_var.c
-    src/kahan_sum.c
+    stats-c/mean_var.c
+    stats-c/kahan_sum.c
 )
 
 # Create object library
@@ -54,13 +54,14 @@ target_compile_definitions(finkit_stats PRIVATE FC_STATIC_BUILD)
 
 # Set compile flags for SIMD variants based on detected level
 if(FC_SIMD_LEVEL STREQUAL "AVX512")
-    set_source_files_properties(src/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
-    set_source_files_properties(src/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
+    set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
+    set_source_files_properties(stats-c/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
 elseif(FC_SIMD_LEVEL STREQUAL "AVX2")
-    set_source_files_properties(src/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
-    set_source_files_properties(src/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
+    set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
+    set_source_files_properties(stats-c/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
 elseif(FC_SIMD_LEVEL STREQUAL "SSE42")
-    set_source_files_properties(src/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
+    set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
+    set_source_files_properties(stats-c/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
 endif()
 
 # Create static library

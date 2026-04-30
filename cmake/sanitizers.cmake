@@ -1,5 +1,5 @@
 #
-# .github/sanitizers.cmake - CMake sanitizer configuration for platform library
+# cmake/sanitizers.cmake - CMake sanitizer configuration for platform library
 #
 #
 # Provides unified sanitizer configuration that works across:

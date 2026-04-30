@@ -30,11 +30,12 @@ package stats
 #endif
 
 // Stats sources
-#include "src/mean_var.c"
-#include "src/kahan_sum.c"
+#include "stats-c/mean_var.c"
+#include "stats-c/kahan_sum.c"
 
-// Forward declarations for fc_init/fc_cleanup (no public header)
-int fc_init(void);
-void fc_cleanup(void);
 */
 import "C"
+
+func init() {
+	C.fc_init()
+}

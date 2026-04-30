@@ -57,9 +57,9 @@ LINUX_CONFIG := -G Ninja \
 
 default: linux
 
-all: linux windows go
+all: format linux windows go
 
-qa: qa-static qa-sanitizers
+qa: format qa-static qa-sanitizers
 	@echo "==> All QA checks completed"
 
 qa-static: clang-tidy cppcheck
@@ -82,8 +82,10 @@ windows:
 	@$(CMAKE) --build $(WINDOWS_BUILD_DIR) --parallel
 
 go:
-	@echo "==> Building Go module (verify compilation)"
+	@echo "==> Building Go module with source (verify compilation)"
 	@CGO_CFLAGS_ALLOW="-m(avx2|avx512f|avx512dq|fma|sse4\.2)" go build ./...
+	@echo "==> Building Go module with lib (verify compilation)"
+	@CGO_CFLAGS_ALLOW="-m(avx2|avx512f|avx512dq|fma|sse4\.2)" go build -tags lib ./...
 
 test: linux
 	@echo "==> Running C tests with coverage"
@@ -112,7 +114,11 @@ bench:
 
 format:
 	@echo "==> Formatting C code with clang-format"
-	@find src include -name '*.c' -o -name '*.h' | xargs clang-format -i
+	@if command -v clang-format >/dev/null 2>&1; then \
+		find stats-c include \( -name '*.c' -o -name '*.h' \) -exec clang-format -i {} \; ; \
+	else \
+		echo "WARNING: clang-format not found, skipping format check"; \
+	fi
 
 verify:
 	@echo "=== Verify artifact formats ==="
@@ -181,11 +187,11 @@ clang-tidy:
 		-DCMAKE_BUILD_TYPE=Debug \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON >/dev/null 2>&1 || true
 	@echo "==> Running clang-tidy analysis on C source files"
-	@find src include \( -name '*.c' -o -name '*.h' \) \
+	@find stats-c include \( -name '*.c' -o -name '*.h' \) \
 		! -name 'platform_win.c' \
 		! -name 'platform_macos.c' \
 		-print | while read f; do echo "  Checking: $$f"; done
-	@find src include \( -name '*.c' -o -name '*.h' \) \
+	@find stats-c include \( -name '*.c' -o -name '*.h' \) \
 		! -name 'platform_win.c' \
 		! -name 'platform_macos.c' \
 		-exec clang-tidy -p build/clang-tidy {} \; 2>&1 | \
@@ -194,7 +200,7 @@ clang-tidy:
 
 cppcheck:
 	@echo "==> Running cppcheck static analysis on C source files"
-	@find src include \( -name '*.c' -o -name '*.h' \) -print | \
+	@find stats-c include \( -name '*.c' -o -name '*.h' \) -print | \
 		while read f; do echo "  Checking: $$f"; done
 	@cppcheck --enable=warning,performance,portability \
 		--suppress=missingIncludeSystem \
@@ -203,7 +209,7 @@ cppcheck:
 		--suppress=unusedFunction \
 		--suppress=knownConditionTrueFalse \
 		--inline-suppr --quiet \
-		-I include src/ 2>&1 || true
+		-I include stats-c/ 2>&1 || true
 	@echo "==> cppcheck: No issues found"
 
 clean:

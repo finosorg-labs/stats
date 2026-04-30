@@ -9,8 +9,8 @@
 #ifndef FC_STATS_H
 #define FC_STATS_H
 
-#include "mean_var.h"
 #include "kahan_sum.h"
+#include "mean_var.h"
 
 #ifdef __cplusplus
 extern "C" {

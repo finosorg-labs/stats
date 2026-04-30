@@ -18,3 +18,7 @@ int fc_init(void);
 void fc_cleanup(void);
 */
 import "C"
+
+func init() {
+	C.fc_init()
+}

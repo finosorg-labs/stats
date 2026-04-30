@@ -36,8 +36,8 @@
 #ifndef FC_KAHAN_SUM_H
 #define FC_KAHAN_SUM_H
 
-#include <stddef.h>
 #include "../../platform/include/platform.h"
+#include <stddef.h>
 
 FC_BEGIN_DECLS
 
@@ -93,8 +93,8 @@ float fc_stat_kahan_sum_f32(const float* data, size_t n);
  * Kahan summation. Useful when data arrives in chunks or streams.
  */
 typedef struct {
-    double sum;  /**< Running sum */
-    double c;    /**< Compensation for lost low-order bits */
+    double sum; /**< Running sum */
+    double c;   /**< Compensation for lost low-order bits */
 } fc_kahan_state_t;
 
 /**
