@@ -21,8 +21,8 @@
 #ifndef FC_STATS_MEAN_VAR_H
 #define FC_STATS_MEAN_VAR_H
 
-#include "../../platform/include/error.h"
-#include "../../platform/include/platform.h"
+#include "error.h"
+#include "platform.h"
 
 FC_BEGIN_DECLS
 

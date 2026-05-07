@@ -11,6 +11,7 @@ extern void bench_kahan_sum_run(void);
 extern void bench_welford_run(void);
 extern void bench_covariance_run(void);
 extern void bench_quantile_run_all(void);
+extern void bench_rolling_run(void);
 
 /**
  * @brief Run all stats benchmarks
@@ -21,4 +22,5 @@ void bench_stats_run(void) {
     bench_welford_run();
     bench_covariance_run();
     bench_quantile_run_all();
+    bench_rolling_run();
 }

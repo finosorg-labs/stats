@@ -25,8 +25,8 @@
 #ifndef FC_STATS_WELFORD_H
 #define FC_STATS_WELFORD_H
 
-#include "../../platform/include/error.h"
-#include "../../platform/include/platform.h"
+#include "error.h"
+#include "platform.h"
 
 FC_BEGIN_DECLS
 

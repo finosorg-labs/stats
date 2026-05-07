@@ -16,6 +16,7 @@ package stats
 #include <welford.h>
 #include <covariance.h>
 #include <quantile.h>
+#include <rolling.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -38,6 +39,7 @@ package stats
 #include "stats-c/welford.c"
 #include "stats-c/covariance.c"
 #include "stats-c/quantile.c"
+#include "stats-c/rolling.c"
 
 */
 import "C"

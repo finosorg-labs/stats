@@ -12,6 +12,7 @@ add_executable(stats_tests
     test_welford.c
     test_covariance.c
     test_quantile.c
+    test_rolling.c
 )
 
 # Link with stats library
