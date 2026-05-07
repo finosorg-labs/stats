@@ -12,6 +12,7 @@ extern void register_welford_tests(void);
 extern void register_covariance_tests(void);
 extern void register_quantile_tests(void);
 extern void register_rolling_tests(void);
+extern void register_rank_tests(void);
 
 /**
  * @brief Register all stats module tests
@@ -23,4 +24,5 @@ void register_stats_tests(void) {
     register_covariance_tests();
     register_quantile_tests();
     register_rolling_tests();
+    register_rank_tests();
 }

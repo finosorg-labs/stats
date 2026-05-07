@@ -12,6 +12,7 @@
 #include "kahan_sum.h"
 #include "mean_var.h"
 #include "quantile.h"
+#include "rank.h"
 #include "welford.h"
 
 #ifdef __cplusplus

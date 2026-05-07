@@ -17,6 +17,7 @@ package stats
 #include <covariance.h>
 #include <quantile.h>
 #include <rolling.h>
+#include <rank.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -40,6 +41,7 @@ package stats
 #include "stats-c/covariance.c"
 #include "stats-c/quantile.c"
 #include "stats-c/rolling.c"
+#include "stats-c/rank.c"
 
 */
 import "C"

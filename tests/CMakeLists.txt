@@ -13,6 +13,7 @@ add_executable(stats_tests
     test_covariance.c
     test_quantile.c
     test_rolling.c
+    test_rank.c
 )
 
 # Link with stats library
