@@ -27,6 +27,7 @@ add_executable(stats_benchmarks
     bench_kahan_sum.c
     bench_welford.c
     bench_covariance.c
+    bench_quantile.c
 )
 
 # Link with benchmark framework and stats library
@@ -59,6 +60,7 @@ if(FC_SIMD_CFLAGS)
     set_source_files_properties(bench_kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_welford.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_covariance.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
+    set_source_files_properties(bench_quantile.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
 endif()
 
 # Installation

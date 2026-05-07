@@ -4,7 +4,7 @@
  */
 
 #include "../include/welford.h"
-#include "../../platform/include/simd_detect.h"
+#include "simd_detect.h"
 #include "test_framework.h"
 #include <float.h>
 #include <math.h>

@@ -5,7 +5,7 @@
 
 #include "../include/welford.h"
 #include "bench_framework.h"
-#include "../../platform/include/simd_detect.h"
+#include "simd_detect.h"
 #include <stdio.h>
 #include <stdlib.h>
 

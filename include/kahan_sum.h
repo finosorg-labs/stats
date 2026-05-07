@@ -36,7 +36,7 @@
 #ifndef FC_KAHAN_SUM_H
 #define FC_KAHAN_SUM_H
 
-#include "../../platform/include/platform.h"
+#include "platform.h"
 #include <stddef.h>
 
 FC_BEGIN_DECLS

@@ -1,7 +1,7 @@
 #ifndef FC_STATS_COVARIANCE_H
 #define FC_STATS_COVARIANCE_H
 
-#include "../modules/platform/include/error.h"
+#include "error.h"
 #include <stddef.h>
 #include <stdint.h>
 

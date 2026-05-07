@@ -157,33 +157,51 @@ func MeanBatch(data [][]float64) ([]float64, error) {
 		}
 	}
 
-	// Flatten data into a single contiguous array
-	flatData := make([]float64, len(data)*n)
+	// Allocate C memory for flattened data
+	totalSize := len(data) * n
+	cFlatData := C.malloc(C.size_t(totalSize) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cFlatData)
+
+	// Copy data to C memory
+	cFlatDataSlice := (*[1 << 30]C.double)(cFlatData)[:totalSize:totalSize]
+	idx := 0
 	for i := range data {
-		copy(flatData[i*n:(i+1)*n], data[i])
+		for j := range data[i] {
+			cFlatDataSlice[idx] = C.double(data[i][j])
+			idx++
+		}
 	}
 
 	// Allocate C memory for pointer array
 	cDataPtrs := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 	defer C.free(cDataPtrs)
 
-	// Create array of pointers pointing into flatData
+	// Create array of pointers pointing into C memory
 	ptrArray := (*[1 << 30]*C.double)(cDataPtrs)[:len(data):len(data)]
 	for i := range data {
-		ptrArray[i] = (*C.double)(unsafe.Pointer(&flatData[i*n]))
+		ptrArray[i] = (*C.double)(unsafe.Pointer(&cFlatDataSlice[i*n]))
 	}
 
-	means := make([]float64, len(data))
+	// Allocate C memory for output array
+	cMeans := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cMeans)
 
 	status := C.fc_stats_mean_batch_f64(
 		(**C.double)(cDataPtrs),
 		C.size_t(n),
 		C.size_t(len(data)),
-		(*C.double)(unsafe.Pointer(&means[0])),
+		(*C.double)(cMeans),
 	)
 
 	if err := statusToError(status); err != nil {
 		return nil, err
+	}
+
+	// Copy results from C memory to Go slice
+	means := make([]float64, len(data))
+	cMeansSlice := (*[1 << 30]C.double)(cMeans)[:len(data):len(data)]
+	for i := range means {
+		means[i] = float64(cMeansSlice[i])
 	}
 
 	return means, nil
@@ -207,23 +225,35 @@ func VarianceBatch(data [][]float64, sample bool) ([]float64, error) {
 		}
 	}
 
-	// Flatten data into a single contiguous array
-	flatData := make([]float64, len(data)*n)
+	// Allocate C memory for flattened data
+	totalSize := len(data) * n
+	cFlatData := C.malloc(C.size_t(totalSize) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cFlatData)
+
+	// Copy data to C memory
+	cFlatDataSlice := (*[1 << 30]C.double)(cFlatData)[:totalSize:totalSize]
+	idx := 0
 	for i := range data {
-		copy(flatData[i*n:(i+1)*n], data[i])
+		for j := range data[i] {
+			cFlatDataSlice[idx] = C.double(data[i][j])
+			idx++
+		}
 	}
 
 	// Allocate C memory for pointer array
 	cDataPtrs := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 	defer C.free(cDataPtrs)
 
-	// Create array of pointers pointing into flatData
+	// Create array of pointers pointing into C memory
 	ptrArray := (*[1 << 30]*C.double)(cDataPtrs)[:len(data):len(data)]
 	for i := range data {
-		ptrArray[i] = (*C.double)(unsafe.Pointer(&flatData[i*n]))
+		ptrArray[i] = (*C.double)(unsafe.Pointer(&cFlatDataSlice[i*n]))
 	}
 
-	variances := make([]float64, len(data))
+	// Allocate C memory for output array
+	cVariances := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cVariances)
+
 	sampleFlag := C.int(0)
 	if sample {
 		sampleFlag = C.int(1)
@@ -233,12 +263,19 @@ func VarianceBatch(data [][]float64, sample bool) ([]float64, error) {
 		(**C.double)(cDataPtrs),
 		C.size_t(n),
 		C.size_t(len(data)),
-		(*C.double)(unsafe.Pointer(&variances[0])),
+		(*C.double)(cVariances),
 		sampleFlag,
 	)
 
 	if err := statusToError(status); err != nil {
 		return nil, err
+	}
+
+	// Copy results from C memory to Go slice
+	variances := make([]float64, len(data))
+	cVariancesSlice := (*[1 << 30]C.double)(cVariances)[:len(data):len(data)]
+	for i := range variances {
+		variances[i] = float64(cVariancesSlice[i])
 	}
 
 	return variances, nil
@@ -262,24 +299,37 @@ func MeanVarianceBatch(data [][]float64, sample bool) (means, variances []float6
 		}
 	}
 
-	// Flatten data into a single contiguous array
-	flatData := make([]float64, len(data)*n)
+	// Allocate C memory for flattened data
+	totalSize := len(data) * n
+	cFlatData := C.malloc(C.size_t(totalSize) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cFlatData)
+
+	// Copy data to C memory
+	cFlatDataSlice := (*[1 << 30]C.double)(cFlatData)[:totalSize:totalSize]
+	idx := 0
 	for i := range data {
-		copy(flatData[i*n:(i+1)*n], data[i])
+		for j := range data[i] {
+			cFlatDataSlice[idx] = C.double(data[i][j])
+			idx++
+		}
 	}
 
 	// Allocate C memory for pointer array
 	cDataPtrs := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(uintptr(0))))
 	defer C.free(cDataPtrs)
 
-	// Create array of pointers pointing into flatData
+	// Create array of pointers pointing into C memory
 	ptrArray := (*[1 << 30]*C.double)(cDataPtrs)[:len(data):len(data)]
 	for i := range data {
-		ptrArray[i] = (*C.double)(unsafe.Pointer(&flatData[i*n]))
+		ptrArray[i] = (*C.double)(unsafe.Pointer(&cFlatDataSlice[i*n]))
 	}
 
-	means = make([]float64, len(data))
-	variances = make([]float64, len(data))
+	// Allocate C memory for output arrays
+	cMeans := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cMeans)
+	cVariances := C.malloc(C.size_t(len(data)) * C.size_t(unsafe.Sizeof(C.double(0))))
+	defer C.free(cVariances)
+
 	sampleFlag := C.int(0)
 	if sample {
 		sampleFlag = C.int(1)
@@ -289,13 +339,23 @@ func MeanVarianceBatch(data [][]float64, sample bool) (means, variances []float6
 		(**C.double)(cDataPtrs),
 		C.size_t(n),
 		C.size_t(len(data)),
-		(*C.double)(unsafe.Pointer(&means[0])),
-		(*C.double)(unsafe.Pointer(&variances[0])),
+		(*C.double)(cMeans),
+		(*C.double)(cVariances),
 		sampleFlag,
 	)
 
 	if err := statusToError(status); err != nil {
 		return nil, nil, err
+	}
+
+	// Copy results from C memory to Go slices
+	means = make([]float64, len(data))
+	variances = make([]float64, len(data))
+	cMeansSlice := (*[1 << 30]C.double)(cMeans)[:len(data):len(data)]
+	cVariancesSlice := (*[1 << 30]C.double)(cVariances)[:len(data):len(data)]
+	for i := range means {
+		means[i] = float64(cMeansSlice[i])
+		variances[i] = float64(cVariancesSlice[i])
 	}
 
 	return means, variances, nil
