@@ -14,6 +14,7 @@ package stats
 #include <mean_var.h>
 #include <kahan_sum.h>
 #include <welford.h>
+#include <covariance.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -34,6 +35,7 @@ package stats
 #include "stats-c/mean_var.c"
 #include "stats-c/kahan_sum.c"
 #include "stats-c/welford.c"
+#include "stats-c/covariance.c"
 
 */
 import "C"

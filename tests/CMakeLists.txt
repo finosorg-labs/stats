@@ -10,6 +10,7 @@ add_executable(stats_tests
     test_mean_var.c
     test_kahan_sum.c
     test_welford.c
+    test_covariance.c
 )
 
 # Link with stats library

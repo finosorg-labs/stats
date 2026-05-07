@@ -1,3 +1,6 @@
 [submodule "modules/platform"]
 	path = modules/platform
 	url = ../platform
+[submodule "modules/matrix"]
+	path = modules/matrix
+	url = ../matrix

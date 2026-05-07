@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-const epsilon = 1e-10
-
 func TestWelfordNew(t *testing.T) {
 	w, err := NewWelford()
 	if err != nil {

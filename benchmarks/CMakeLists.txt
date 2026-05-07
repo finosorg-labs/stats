@@ -26,6 +26,7 @@ add_executable(stats_benchmarks
     bench_mean_var.c
     bench_kahan_sum.c
     bench_welford.c
+    bench_covariance.c
 )
 
 # Link with benchmark framework and stats library
@@ -51,15 +52,13 @@ target_include_directories(stats_benchmarks
 # Compiler flags for benchmarks
 target_compile_options(stats_benchmarks PRIVATE -Wall -Wextra -Wpedantic -ffp-contract=off)
 
-# Enable SIMD for benchmark files to enable SIMD tests
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    set(FC_SIMD_FLAGS "-msse4.2 -mavx2 -mavx512f")
-elseif(MSVC)
-    set(FC_SIMD_FLAGS "/arch:AVX512")
-endif()
-
-if(FC_SIMD_FLAGS)
-    set_source_files_properties(bench_kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_FLAGS}")
+# Use the same SIMD flags as the library build
+# This ensures benchmarks can run on the target CPU
+if(FC_SIMD_CFLAGS)
+    set_source_files_properties(bench_mean_var.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
+    set_source_files_properties(bench_kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
+    set_source_files_properties(bench_welford.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
+    set_source_files_properties(bench_covariance.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
 endif()
 
 # Installation

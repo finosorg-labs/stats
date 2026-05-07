@@ -1,3 +1,3 @@
-module github.com/finos-org-labs/stats
+module github.com/finosorg-labs/stats
 
 go 1.26.1
