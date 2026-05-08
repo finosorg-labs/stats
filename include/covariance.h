@@ -82,6 +82,40 @@ fc_status_t fc_stats_covariance_correlation_f64(
     int sample_cov
 );
 
+/**
+ * @brief Compute Spearman rank correlation coefficient matrix
+ *
+ * Computes the Spearman rank correlation coefficient, which is the Pearson
+ * correlation coefficient computed on the ranks of the data. This is a
+ * non-parametric measure of monotonic association.
+ *
+ * @param[out] corr Output Spearman correlation matrix (n_vars × n_vars), row-major
+ * @param[in] data Input data matrix (n_samples × n_vars), row-major
+ * @param[in] n_samples Number of samples (rows)
+ * @param[in] n_vars Number of variables (columns)
+ *
+ * @return FC_OK on success, error code otherwise
+ *
+ * @note Time complexity: O(n_vars × n_samples × log(n_samples))
+ * @note Space complexity: O(n_samples × n_vars) for temporary rank storage
+ * @note Thread-safe: Yes (no shared state)
+ * @note Requires: n_samples >= 2
+ * @note Ties are handled using average rank method
+ * @note Diagonal elements are always 1.0
+ * @note Values are in range [-1, 1]
+ *
+ * Example:
+ *   Data: [[1, 10], [2, 20], [3, 15]]
+ *   Ranks: [[1, 1], [2, 3], [3, 2]]
+ *   Spearman correlation measures monotonic (not necessarily linear) relationship
+ */
+fc_status_t fc_stats_spearman_f64(
+    double* corr,
+    const double* data,
+    size_t n_samples,
+    size_t n_vars
+);
+
 #ifdef __cplusplus
 }
 #endif

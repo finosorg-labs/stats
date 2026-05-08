@@ -208,6 +208,169 @@ TEST(test_covariance_constant_variable) {
     FC_TEST_ASSERT_DOUBLE_EQ(cov[3], 0.0, TEST_TOLERANCE);
 }
 
+TEST(test_spearman_perfect_monotonic) {
+    /* Perfect monotonic relationship: y = 2*x + 1 */
+    double data[] = {1, 3, 2, 5, 3, 7, 4, 9, 5, 11};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 5, 2);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Perfect monotonic relationship should give correlation = 1.0 */
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[0], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[1], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[2], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[3], 1.0, TEST_TOLERANCE);
+}
+
+TEST(test_spearman_perfect_negative) {
+    /* Perfect negative monotonic relationship */
+    double data[] = {1, 10, 2, 8, 3, 6, 4, 4, 5, 2};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 5, 2);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Perfect negative monotonic relationship should give correlation = -1.0 */
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[0], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[1], -1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[2], -1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[3], 1.0, TEST_TOLERANCE);
+}
+
+TEST(test_spearman_uncorrelated) {
+    /* Uncorrelated variables */
+    double data[] = {1, 5, 2, 3, 3, 1, 4, 4, 5, 2};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 5, 2);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Diagonal should be 1.0 */
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[0], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[3], 1.0, TEST_TOLERANCE);
+
+    /* Off-diagonal should be close to 0 for uncorrelated data */
+    ASSERT_TRUE(corr[1] >= -1.0 && corr[1] <= 1.0);
+    ASSERT_TRUE(corr[2] >= -1.0 && corr[2] <= 1.0);
+}
+
+TEST(test_spearman_with_ties) {
+    /* Data with tied values */
+    double data[] = {1, 2, 2, 3, 2, 3, 3, 4, 4, 5};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 5, 2);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Diagonal should be 1.0 */
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[0], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[3], 1.0, TEST_TOLERANCE);
+
+    /* Correlation should be in valid range (with tolerance for floating-point errors) */
+    ASSERT_TRUE(corr[1] >= -1.0 - TEST_TOLERANCE && corr[1] <= 1.0 + TEST_TOLERANCE);
+    ASSERT_TRUE(corr[2] >= -1.0 - TEST_TOLERANCE && corr[2] <= 1.0 + TEST_TOLERANCE);
+
+    /* Matrix should be symmetric */
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[1], corr[2], TEST_TOLERANCE);
+}
+
+TEST(test_spearman_nonlinear) {
+    /* Nonlinear but monotonic relationship: y = x^2 */
+    double data[] = {1, 1, 2, 4, 3, 9, 4, 16, 5, 25};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 5, 2);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Spearman should detect monotonic relationship even if nonlinear */
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[1], 1.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(corr[2], 1.0, TEST_TOLERANCE);
+}
+
+TEST(test_spearman_null_input) {
+    double data[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(NULL, data, 5, 2);
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+
+    status = fc_stats_spearman_f64(corr, NULL, 5, 2);
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
+TEST(test_spearman_invalid_dimensions) {
+    double data[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    double corr[4];
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 0, 2);
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+
+    status = fc_stats_spearman_f64(corr, data, 5, 0);
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+
+    /* Insufficient samples */
+    status = fc_stats_spearman_f64(corr, data, 1, 2);
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
+TEST(test_spearman_symmetric) {
+    /* Spearman correlation matrix should be symmetric */
+    double data[30];
+    for (int i = 0; i < 30; i++) {
+        data[i] = (double) (i % 7) + 0.5 * (i % 3);
+    }
+
+    double corr[9];
+    fc_status_t status = fc_stats_spearman_f64(corr, data, 10, 3);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Check symmetry */
+    for (size_t i = 0; i < 3; i++) {
+        for (size_t j = 0; j < 3; j++) {
+            FC_TEST_ASSERT_DOUBLE_EQ(corr[i * 3 + j], corr[j * 3 + i], TEST_TOLERANCE);
+        }
+    }
+}
+
+TEST(test_spearman_large_matrix) {
+    /* Test with larger matrix */
+    const size_t n_samples = 50;
+    const size_t n_vars    = 10;
+
+    double* data = (double*) malloc(n_samples * n_vars * sizeof(double));
+    double* corr = (double*) malloc(n_vars * n_vars * sizeof(double));
+
+    /* Generate test data */
+    for (size_t i = 0; i < n_samples * n_vars; i++) {
+        data[i] = sin((double) i * 0.1) + cos((double) i * 0.05);
+    }
+
+    fc_status_t status = fc_stats_spearman_f64(corr, data, n_samples, n_vars);
+    ASSERT_EQ(status, FC_OK);
+
+    /* Verify symmetry */
+    for (size_t i = 0; i < n_vars; i++) {
+        for (size_t j = 0; j < n_vars; j++) {
+            FC_TEST_ASSERT_DOUBLE_EQ(corr[i * n_vars + j], corr[j * n_vars + i], TEST_TOLERANCE);
+        }
+    }
+
+    /* Verify diagonal is 1.0 */
+    for (size_t i = 0; i < n_vars; i++) {
+        FC_TEST_ASSERT_DOUBLE_EQ(corr[i * n_vars + i], 1.0, TEST_TOLERANCE);
+    }
+
+    /* Verify range [-1, 1] */
+    for (size_t i = 0; i < n_vars * n_vars; i++) {
+        ASSERT_TRUE(corr[i] >= -1.0 - TEST_TOLERANCE);
+        ASSERT_TRUE(corr[i] <= 1.0 + TEST_TOLERANCE);
+    }
+
+    free(data);
+    free(corr);
+}
+
 void register_covariance_tests(void) {
     RUN_TEST(test_covariance_basic);
     RUN_TEST(test_covariance_population);
@@ -221,4 +384,13 @@ void register_covariance_tests(void) {
     RUN_TEST(test_covariance_insufficient_samples);
     RUN_TEST(test_covariance_large_matrix);
     RUN_TEST(test_covariance_constant_variable);
+    RUN_TEST(test_spearman_perfect_monotonic);
+    RUN_TEST(test_spearman_perfect_negative);
+    RUN_TEST(test_spearman_uncorrelated);
+    RUN_TEST(test_spearman_with_ties);
+    RUN_TEST(test_spearman_nonlinear);
+    RUN_TEST(test_spearman_null_input);
+    RUN_TEST(test_spearman_invalid_dimensions);
+    RUN_TEST(test_spearman_symmetric);
+    RUN_TEST(test_spearman_large_matrix);
 }

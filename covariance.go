@@ -140,3 +140,46 @@ func CovarianceCorrelation(data []float64, nSamples, nVars int, sampleCov bool) 
 
 	return cov, corr, nil
 }
+
+// Spearman computes the Spearman rank correlation coefficient matrix.
+//
+// The Spearman correlation is a non-parametric measure of monotonic association,
+// computed as the Pearson correlation of the ranked data. It measures how well
+// the relationship between two variables can be described by a monotonic function.
+//
+// Parameters:
+//   - data: Input data matrix (nSamples × nVars), row-major order
+//   - nSamples: Number of samples (rows)
+//   - nVars: Number of variables (columns)
+//
+// Returns:
+//   - Spearman correlation matrix (nVars × nVars), row-major order
+//   - Error if any
+//
+// The correlation matrix has 1.0 on the diagonal and values in [-1, 1] elsewhere.
+// Ties are handled using the average rank method.
+// Time complexity: O(nVars × nSamples × log(nSamples))
+func Spearman(data []float64, nSamples, nVars int) ([]float64, error) {
+	if len(data) != nSamples*nVars {
+		return nil, fmt.Errorf("data length mismatch: expected %d, got %d", nSamples*nVars, len(data))
+	}
+
+	if nSamples < 2 || nVars == 0 {
+		return nil, fmt.Errorf("invalid dimensions: need at least 2 samples")
+	}
+
+	corr := make([]float64, nVars*nVars)
+
+	status := C.fc_stats_spearman_f64(
+		(*C.double)(unsafe.Pointer(&corr[0])),
+		(*C.double)(unsafe.Pointer(&data[0])),
+		C.size_t(nSamples),
+		C.size_t(nVars),
+	)
+
+	if status != C.FC_OK {
+		return nil, fmt.Errorf("Spearman correlation computation failed: %s", C.GoString(C.fc_status_string(status)))
+	}
+
+	return corr, nil
+}

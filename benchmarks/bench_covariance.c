@@ -152,6 +152,83 @@ static void bench_covariance_correlation_combined(void* user_data) {
     fc_aligned_free(corr);
 }
 
+static void bench_spearman_small(void* user_data) {
+    (void)user_data;
+
+    const size_t n_samples = 100;
+    const size_t n_vars = 5;
+
+    double* data = (double*)fc_aligned_alloc(n_samples * n_vars * sizeof(double), 64);
+    double* corr = (double*)fc_aligned_alloc(n_vars * n_vars * sizeof(double), 64);
+
+    for (size_t i = 0; i < n_samples * n_vars; i++) {
+        data[i] = sin((double)i * 0.1);
+    }
+
+    fc_stats_spearman_f64(corr, data, n_samples, n_vars);
+
+    fc_aligned_free(data);
+    fc_aligned_free(corr);
+}
+
+static void bench_spearman_medium(void* user_data) {
+    (void)user_data;
+
+    const size_t n_samples = 1000;
+    const size_t n_vars = 20;
+
+    double* data = (double*)fc_aligned_alloc(n_samples * n_vars * sizeof(double), 64);
+    double* corr = (double*)fc_aligned_alloc(n_vars * n_vars * sizeof(double), 64);
+
+    for (size_t i = 0; i < n_samples * n_vars; i++) {
+        data[i] = sin((double)i * 0.1);
+    }
+
+    fc_stats_spearman_f64(corr, data, n_samples, n_vars);
+
+    fc_aligned_free(data);
+    fc_aligned_free(corr);
+}
+
+static void bench_spearman_large(void* user_data) {
+    (void)user_data;
+
+    const size_t n_samples = 5000;
+    const size_t n_vars = 50;
+
+    double* data = (double*)fc_aligned_alloc(n_samples * n_vars * sizeof(double), 64);
+    double* corr = (double*)fc_aligned_alloc(n_vars * n_vars * sizeof(double), 64);
+
+    for (size_t i = 0; i < n_samples * n_vars; i++) {
+        data[i] = sin((double)i * 0.1);
+    }
+
+    fc_stats_spearman_f64(corr, data, n_samples, n_vars);
+
+    fc_aligned_free(data);
+    fc_aligned_free(corr);
+}
+
+static void bench_spearman_financial(void* user_data) {
+    (void)user_data;
+
+    // Typical financial scenario: 250 trading days, 100 stocks
+    const size_t n_samples = 250;
+    const size_t n_vars = 100;
+
+    double* data = (double*)fc_aligned_alloc(n_samples * n_vars * sizeof(double), 64);
+    double* corr = (double*)fc_aligned_alloc(n_vars * n_vars * sizeof(double), 64);
+
+    for (size_t i = 0; i < n_samples * n_vars; i++) {
+        data[i] = sin((double)i * 0.1) + cos((double)i * 0.05);
+    }
+
+    fc_stats_spearman_f64(corr, data, n_samples, n_vars);
+
+    fc_aligned_free(data);
+    fc_aligned_free(corr);
+}
+
 void bench_covariance_run(void) {
     fc_bench_config_t config = FC_BENCH_CONFIG_DEFAULT;
     fc_bench_result_t result;
@@ -194,5 +271,27 @@ void bench_covariance_run(void) {
     config.name = "Covariance+Correlation 250x100";
     config.data_size = 250 * 100 * sizeof(double);
     fc_bench_run(&config, bench_covariance_correlation_combined, NULL, &result);
+    fc_bench_result_print(&result);
+
+    // Spearman benchmarks
+    printf("\n");
+    config.name = "Spearman 100x5";
+    config.data_size = 100 * 5 * sizeof(double);
+    fc_bench_run(&config, bench_spearman_small, NULL, &result);
+    fc_bench_result_print(&result);
+
+    config.name = "Spearman 1000x20";
+    config.data_size = 1000 * 20 * sizeof(double);
+    fc_bench_run(&config, bench_spearman_medium, NULL, &result);
+    fc_bench_result_print(&result);
+
+    config.name = "Spearman 5000x50";
+    config.data_size = 5000 * 50 * sizeof(double);
+    fc_bench_run(&config, bench_spearman_large, NULL, &result);
+    fc_bench_result_print(&result);
+
+    config.name = "Spearman 250x100 (Financial)";
+    config.data_size = 250 * 100 * sizeof(double);
+    fc_bench_run(&config, bench_spearman_financial, NULL, &result);
     fc_bench_result_print(&result);
 }
