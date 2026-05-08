@@ -18,6 +18,7 @@ package stats
 #include <quantile.h>
 #include <rolling.h>
 #include <rank.h>
+#include <ema.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -42,6 +43,7 @@ package stats
 #include "stats-c/quantile.c"
 #include "stats-c/rolling.c"
 #include "stats-c/rank.c"
+#include "stats-c/ema.c"
 
 */
 import "C"

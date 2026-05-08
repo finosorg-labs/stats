@@ -43,6 +43,7 @@ set(STATS_SOURCES
     stats-c/quantile.c
     stats-c/rolling.c
     stats-c/rank.c
+    stats-c/ema.c
 )
 
 # Create object library
@@ -66,6 +67,7 @@ if(FC_SIMD_LEVEL STREQUAL "AVX512")
     set_source_files_properties(stats-c/quantile.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
     set_source_files_properties(stats-c/rolling.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
     set_source_files_properties(stats-c/rank.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
+    set_source_files_properties(stats-c/ema.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
 elseif(FC_SIMD_LEVEL STREQUAL "AVX2")
     set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
     set_source_files_properties(stats-c/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
@@ -74,6 +76,7 @@ elseif(FC_SIMD_LEVEL STREQUAL "AVX2")
     set_source_files_properties(stats-c/quantile.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
     set_source_files_properties(stats-c/rolling.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
     set_source_files_properties(stats-c/rank.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
+    set_source_files_properties(stats-c/ema.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
 elseif(FC_SIMD_LEVEL STREQUAL "SSE42")
     set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
     set_source_files_properties(stats-c/kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
@@ -82,6 +85,7 @@ elseif(FC_SIMD_LEVEL STREQUAL "SSE42")
     set_source_files_properties(stats-c/quantile.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
     set_source_files_properties(stats-c/rolling.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
     set_source_files_properties(stats-c/rank.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
+    set_source_files_properties(stats-c/ema.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
 endif()
 
 # Create static library

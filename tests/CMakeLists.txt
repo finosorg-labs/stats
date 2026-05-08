@@ -14,6 +14,7 @@ add_executable(stats_tests
     test_quantile.c
     test_rolling.c
     test_rank.c
+    test_ema.c
 )
 
 # Link with stats library
