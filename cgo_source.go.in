@@ -19,6 +19,7 @@ package stats
 #include <rolling.h>
 #include <rank.h>
 #include <ema.h>
+#include <moments.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -44,6 +45,7 @@ package stats
 #include "stats-c/rolling.c"
 #include "stats-c/rank.c"
 #include "stats-c/ema.c"
+#include "stats-c/moments.c"
 
 */
 import "C"

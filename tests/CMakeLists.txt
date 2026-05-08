@@ -15,6 +15,7 @@ add_executable(stats_tests
     test_rolling.c
     test_rank.c
     test_ema.c
+    test_moments.c
 )
 
 # Link with stats library
