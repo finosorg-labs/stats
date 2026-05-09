@@ -20,6 +20,7 @@ package stats
 #include <rank.h>
 #include <ema.h>
 #include <moments.h>
+#include <zscore.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -46,6 +47,7 @@ package stats
 #include "stats-c/rank.c"
 #include "stats-c/ema.c"
 #include "stats-c/moments.c"
+#include "stats-c/zscore.c"
 
 */
 import "C"

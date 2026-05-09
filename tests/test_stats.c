@@ -15,6 +15,7 @@ extern void register_rolling_tests(void);
 extern void register_rank_tests(void);
 extern void register_ema_tests(void);
 extern void register_moments_tests(void);
+extern void register_zscore_tests(void);
 
 /**
  * @brief Register all stats module tests
@@ -29,4 +30,5 @@ void register_stats_tests(void) {
     register_rank_tests();
     register_ema_tests();
     register_moments_tests();
+    register_zscore_tests();
 }
