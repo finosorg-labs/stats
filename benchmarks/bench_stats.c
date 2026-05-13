@@ -16,6 +16,7 @@ extern void bench_rank_run(void);
 extern void bench_ema_run(void);
 extern void bench_moments_run(void);
 extern void bench_zscore_run(void);
+extern void bench_correlation_run(void);
 
 /**
  * @brief Run all stats benchmarks
@@ -31,4 +32,5 @@ void bench_stats_run(void) {
     bench_ema_run();
     bench_moments_run();
     bench_zscore_run();
+    bench_correlation_run();
 }

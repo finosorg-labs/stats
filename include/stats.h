@@ -9,6 +9,7 @@
 #ifndef FC_STATS_H
 #define FC_STATS_H
 
+#include "correlation.h"
 #include "ema.h"
 #include "kahan_sum.h"
 #include "mean_var.h"

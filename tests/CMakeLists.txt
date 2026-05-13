@@ -11,6 +11,7 @@ add_executable(stats_tests
     test_kahan_sum.c
     test_welford.c
     test_covariance.c
+    test_correlation.c
     test_quantile.c
     test_rolling.c
     test_rank.c

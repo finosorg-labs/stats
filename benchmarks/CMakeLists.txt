@@ -27,6 +27,7 @@ add_executable(stats_benchmarks
     bench_kahan_sum.c
     bench_welford.c
     bench_covariance.c
+    bench_correlation.c
     bench_quantile.c
     bench_rolling.c
     bench_rank.c
@@ -65,6 +66,7 @@ if(FC_SIMD_CFLAGS)
     set_source_files_properties(bench_kahan_sum.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_welford.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_covariance.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
+    set_source_files_properties(bench_correlation.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_quantile.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_rolling.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_rank.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")

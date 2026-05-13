@@ -20,6 +20,7 @@ package stats
 #include <kahan_sum.h>
 #include <welford.h>
 #include <covariance.h>
+#include <correlation.h>
 #include <quantile.h>
 #include <rolling.h>
 #include <rank.h>
@@ -46,6 +47,7 @@ package stats
 #include "stats-c/mean_var.c"
 #include "stats-c/kahan_sum.c"
 #include "stats-c/welford.c"
+#include "stats-c/correlation.c"
 #include "stats-c/covariance.c"
 #include "stats-c/quantile.c"
 #include "stats-c/rolling.c"

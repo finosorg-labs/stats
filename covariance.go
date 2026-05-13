@@ -56,7 +56,7 @@ func Covariance(data []float64, nSamples, nVars int, sampleCov bool) ([]float64,
 	return cov, nil
 }
 
-// Correlation computes the correlation coefficient matrix from a covariance matrix.
+// CovarianceToCorrelation computes the correlation coefficient matrix from a covariance matrix.
 //
 // Parameters:
 //   - cov: Input covariance matrix (nVars × nVars), row-major order
@@ -68,7 +68,7 @@ func Covariance(data []float64, nSamples, nVars int, sampleCov bool) ([]float64,
 //
 // The correlation matrix has 1.0 on the diagonal and values in [-1, 1] elsewhere.
 // Time complexity: O(nVars²)
-func Correlation(cov []float64, nVars int) ([]float64, error) {
+func CovarianceToCorrelation(cov []float64, nVars int) ([]float64, error) {
 	if len(cov) != nVars*nVars {
 		return nil, fmt.Errorf("covariance matrix size mismatch: expected %d, got %d", nVars*nVars, len(cov))
 	}

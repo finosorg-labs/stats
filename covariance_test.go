@@ -71,7 +71,7 @@ func TestCorrelationBasic(t *testing.T) {
 	// Perfect positive correlation
 	cov := []float64{4.0, 4.0, 4.0, 4.0}
 
-	corr, err := Correlation(cov, 2)
+	corr, err := CovarianceToCorrelation(cov, 2)
 	if err != nil {
 		t.Fatalf("Correlation failed: %v", err)
 	}
@@ -88,7 +88,7 @@ func TestCorrelationUncorrelated(t *testing.T) {
 	// Zero covariance (identity covariance matrix)
 	cov := []float64{1.0, 0.0, 0.0, 1.0}
 
-	corr, err := Correlation(cov, 2)
+	corr, err := CovarianceToCorrelation(cov, 2)
 	if err != nil {
 		t.Fatalf("Correlation failed: %v", err)
 	}
@@ -293,7 +293,7 @@ func BenchmarkCorrelationSmall(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = Correlation(cov, nVars)
+		_, _ = CovarianceToCorrelation(cov, nVars)
 	}
 }
 
