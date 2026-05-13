@@ -57,7 +57,7 @@ LINUX_CONFIG := -G Ninja \
 
 default: linux
 
-all: format linux windows go
+all: format linux go
 
 qa: format qa-static qa-sanitizers
 	@echo "==> All QA checks completed"
