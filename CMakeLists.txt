@@ -31,10 +31,65 @@ configure_file(
     @ONLY
 )
 
-# Add platform submodule (disable its tests)
-set(BUILD_TESTING OFF CACHE BOOL "Disable platform tests" FORCE)
-add_subdirectory(modules/platform EXCLUDE_FROM_ALL)
-set(BUILD_TESTING ON CACHE BOOL "Enable codec tests" FORCE)
+# Determine platform-specific build directory
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(PLATFORM_BUILD_DIR "linux_amd64")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+        set(PLATFORM_BUILD_DIR "darwin_arm64")
+    else()
+        set(PLATFORM_BUILD_DIR "darwin_amd64")
+    endif()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(PLATFORM_BUILD_DIR "windows_amd64")
+else()
+    message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
+endif()
+
+# Link prebuilt libraries from modules/ directory
+set(PLATFORM_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/build/${PLATFORM_BUILD_DIR}/libfinkit_platform_static.a")
+set(MATRIX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/modules/matrix/build/${PLATFORM_BUILD_DIR}/libfinkit_matrix_static.a")
+set(MPFR_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/build/${PLATFORM_BUILD_DIR}/third_party/mpfr/libmpfr.a")
+set(GMP_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/build/${PLATFORM_BUILD_DIR}/third_party/gmp/libgmp.a")
+
+if(NOT EXISTS "${PLATFORM_LIB_PATH}")
+    message(FATAL_ERROR "Platform library not found at: ${PLATFORM_LIB_PATH}")
+endif()
+if(NOT EXISTS "${MATRIX_LIB_PATH}")
+    message(FATAL_ERROR "Matrix library not found at: ${MATRIX_LIB_PATH}")
+endif()
+if(NOT EXISTS "${MPFR_LIB_PATH}")
+    message(FATAL_ERROR "MPFR library not found at: ${MPFR_LIB_PATH}")
+endif()
+if(NOT EXISTS "${GMP_LIB_PATH}")
+    message(FATAL_ERROR "GMP library not found at: ${GMP_LIB_PATH}")
+endif()
+
+message(STATUS "Found platform library: ${PLATFORM_LIB_PATH}")
+message(STATUS "Found matrix library: ${MATRIX_LIB_PATH}")
+message(STATUS "Found MPFR library: ${MPFR_LIB_PATH}")
+message(STATUS "Found GMP library: ${GMP_LIB_PATH}")
+
+# Create IMPORTED targets for prebuilt libraries
+add_library(finkit_platform_imported STATIC IMPORTED)
+set_target_properties(finkit_platform_imported PROPERTIES
+    IMPORTED_LOCATION "${PLATFORM_LIB_PATH}"
+)
+
+add_library(finkit_matrix_imported STATIC IMPORTED)
+set_target_properties(finkit_matrix_imported PROPERTIES
+    IMPORTED_LOCATION "${MATRIX_LIB_PATH}"
+)
+
+add_library(mpfr_imported STATIC IMPORTED)
+set_target_properties(mpfr_imported PROPERTIES
+    IMPORTED_LOCATION "${MPFR_LIB_PATH}"
+)
+
+add_library(gmp_imported STATIC IMPORTED)
+set_target_properties(gmp_imported PROPERTIES
+    IMPORTED_LOCATION "${GMP_LIB_PATH}"
+)
 
 # Stats module sources
 set(STATS_SOURCES
@@ -58,6 +113,7 @@ target_include_directories(finkit_stats
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/modules/matrix/include>
         $<INSTALL_INTERFACE:include>
 )
 
@@ -110,8 +166,18 @@ target_include_directories(finkit_stats_static
         $<INSTALL_INTERFACE:include>
 )
 
-# Link platform and math library
-target_link_libraries(finkit_stats_static PUBLIC finkit_platform_static m)
+# Link prebuilt libraries
+# Use --start-group/--end-group to handle circular dependencies in static linking
+target_link_libraries(finkit_stats_static PUBLIC
+    -Wl,--start-group
+    finkit_matrix_imported
+    finkit_platform_imported
+    mpfr_imported
+    gmp_imported
+    -Wl,--end-group
+    m
+    gcov
+)
 
 # Create alias
 add_library(finkit::stats ALIAS finkit_stats_static)

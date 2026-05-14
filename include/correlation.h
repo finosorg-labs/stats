@@ -62,13 +62,13 @@ fc_stats_pearson_correlation_f64(const double* x, const double* y, size_t n, dou
  * @brief Compute Pearson correlation coefficient matrix from raw data
  *
  * Computes the full Pearson correlation matrix for multiple variables.
- * Input data is organized as column-major: each variable is a column.
+ * Input data is organized as row-major: each row is a sample, each column is a variable.
  * Output is a symmetric matrix stored in row-major order.
  *
  * Time complexity: O(n_vars² * n_samples)
  * Space complexity: O(n_vars) - for temporary means and stddevs
  *
- * @param data Input data matrix in column-major order (must not be NULL)
+ * @param data Input data matrix in row-major order (must not be NULL)
  *             Size: n_samples × n_vars
  *             data[i * n_vars + j] = sample i of variable j
  * @param n_samples Number of samples/observations (must be >= 2)
@@ -102,7 +102,7 @@ FC_API fc_status_t fc_stats_pearson_correlation_matrix_f64(
  * Time complexity: O(n_vars² * n_samples)
  * Space complexity: O(1)
  *
- * @param data Input data matrix in column-major order (must not be NULL)
+ * @param data Input data matrix in row-major order (must not be NULL)
  * @param n_samples Number of samples (must be >= 2)
  * @param n_vars Number of variables (must be >= 1)
  * @param means Pre-computed means for each variable (must not be NULL, size: n_vars)

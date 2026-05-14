@@ -3,21 +3,24 @@
 #
 
 # Benchmark framework library
-add_library(bench_framework OBJECT
-    bench_framework.c
-)
+if(NOT TARGET bench_framework)
+    add_library(bench_framework OBJECT
+        bench_framework.c
+    )
 
-target_include_directories(bench_framework
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/modules/platform/include
-)
+    target_include_directories(bench_framework
+        PUBLIC
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_SOURCE_DIR}/include
+            ${CMAKE_SOURCE_DIR}/modules/platform/include
+            ${CMAKE_SOURCE_DIR}/modules/matrix/include
+    )
 
-target_link_libraries(bench_framework
-    PUBLIC
-        finkit_stats_static
-)
+    target_link_libraries(bench_framework
+        PUBLIC
+            finkit_stats_static
+    )
+endif()
 
 # Benchmark executable
 add_executable(stats_benchmarks
@@ -53,6 +56,7 @@ target_include_directories(stats_benchmarks
     PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/modules/platform/include
+        ${CMAKE_SOURCE_DIR}/modules/matrix/include
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
