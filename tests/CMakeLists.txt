@@ -18,6 +18,7 @@ add_executable(stats_tests
     test_ema.c
     test_moments.c
     test_zscore.c
+    test_winsorize.c
 )
 
 # Link with stats library
@@ -36,6 +37,7 @@ target_include_directories(stats_tests
     PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/modules/platform/include
+        ${CMAKE_SOURCE_DIR}/modules/matrix/include
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

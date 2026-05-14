@@ -10,10 +10,10 @@ package stats
 #cgo CFLAGS: -I${SRCDIR}/include
 #cgo CFLAGS: -I${SRCDIR}/modules/platform/include
 #cgo CFLAGS: -I${SRCDIR}/modules/matrix/include
-#cgo CFLAGS: -I${SRCDIR}/src
-#cgo CFLAGS: -I${SRCDIR}/modules/platform/src -O2 -Wall -std=c11 -D_POSIX_C_SOURCE=200112L -mavx2 -mfma
-#cgo LDFLAGS: -lm
-#cgo LDFLAGS: ${SRCDIR}/modules/matrix/build/linux_amd64/libfinkit_matrix_static.a ${SRCDIR}/modules/platform/build/linux_amd64/third_party/mpfr/libmpfr.a ${SRCDIR}/modules/platform/build/linux_amd64/third_party/gmp/libgmp.a -lm -lgcov
+#cgo CFLAGS: -I${SRCDIR}/modules/platform/src
+#cgo CFLAGS: -I${SRCDIR}/src -O2 -Wall -std=c11 -D_POSIX_C_SOURCE=200112L -mavx2 
+#cgo LDFLAGS: ${SRCDIR}/modules/platform/build/linux_amd64/libfinkit_platform_static.a -lm -lgcov
+#cgo LDFLAGS: ${SRCDIR}/modules/matrix/build/linux_amd64/libfinkit_matrix_static.a -lm -lgcov
 
 #include <fc_bignum_init.c>
 #include <fc_bigint.c>
@@ -31,6 +31,7 @@ package stats
 #include <ema.h>
 #include <moments.h>
 #include <zscore.h>
+#include <winsorize.h>
 
 // Platform sources (dependency)
 #include "modules/platform/src/simd_detect.c"
@@ -59,6 +60,7 @@ package stats
 #include "stats-c/ema.c"
 #include "stats-c/moments.c"
 #include "stats-c/zscore.c"
+#include "stats-c/winsorize.c"
 
 */
 import "C"

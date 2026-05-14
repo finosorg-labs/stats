@@ -37,6 +37,7 @@ add_executable(stats_benchmarks
     bench_ema.c
     bench_moments.c
     bench_zscore.c
+    bench_winsorize.c
 )
 
 # Link with benchmark framework and stats library
@@ -77,6 +78,7 @@ if(FC_SIMD_CFLAGS)
     set_source_files_properties(bench_ema.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_moments.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
     set_source_files_properties(bench_zscore.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
+    set_source_files_properties(bench_winsorize.c PROPERTIES COMPILE_FLAGS "${FC_SIMD_CFLAGS}")
 endif()
 
 # Installation
