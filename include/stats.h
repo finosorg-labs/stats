@@ -16,6 +16,7 @@
 #include "quantile.h"
 #include "rank.h"
 #include "welford.h"
+#include "winsorize.h"
 
 #ifdef __cplusplus
 extern "C" {
