@@ -104,7 +104,13 @@ typedef struct {
  *
  * @note Must be called before using fc_stat_kahan_add_*
  */
-void fc_stat_kahan_init(fc_kahan_state_t* state);
+static inline void fc_stat_kahan_init(fc_kahan_state_t* state) {
+    if (state == NULL) {
+        return;
+    }
+    state->sum = 0.0;
+    state->c   = 0.0;
+}
 
 /**
  * @brief Add a single value to Kahan sum
@@ -115,7 +121,16 @@ void fc_stat_kahan_init(fc_kahan_state_t* state);
  * @note State must be initialized with fc_stat_kahan_init first
  * @note Thread-safe if each thread uses its own state
  */
-void fc_stat_kahan_add(fc_kahan_state_t* state, double value);
+static inline void fc_stat_kahan_add(fc_kahan_state_t* state, double value) {
+    if (state == NULL) {
+        return;
+    }
+
+    double y   = value - state->c;
+    double t   = state->sum + y;
+    state->c   = (t - state->sum) - y;
+    state->sum = t;
+}
 
 /**
  * @brief Add multiple values to Kahan sum
@@ -127,7 +142,15 @@ void fc_stat_kahan_add(fc_kahan_state_t* state, double value);
  * @note State must be initialized with fc_stat_kahan_init first
  * @note Thread-safe if each thread uses its own state
  */
-void fc_stat_kahan_add_batch(fc_kahan_state_t* state, const double* data, size_t n);
+static inline void fc_stat_kahan_add_batch(fc_kahan_state_t* state, const double* data, size_t n) {
+    if (state == NULL || data == NULL || n == 0) {
+        return;
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        fc_stat_kahan_add(state, data[i]);
+    }
+}
 
 /**
  * @brief Get current sum from Kahan state
@@ -137,7 +160,12 @@ void fc_stat_kahan_add_batch(fc_kahan_state_t* state, const double* data, size_t
  *
  * @note Does not modify state
  */
-double fc_stat_kahan_get_sum(const fc_kahan_state_t* state);
+static inline double fc_stat_kahan_get_sum(const fc_kahan_state_t* state) {
+    if (state == NULL) {
+        return 0.0;
+    }
+    return state->sum;
+}
 
 FC_END_DECLS
 

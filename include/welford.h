@@ -27,6 +27,7 @@
 
 #include "error.h"
 #include "platform.h"
+#include <math.h>
 
 FC_BEGIN_DECLS
 
@@ -57,7 +58,17 @@ typedef struct {
  *
  * @note Thread-safe per instance
  */
-FC_API fc_status_t fc_welford_init(fc_welford_state_t* state);
+static inline fc_status_t fc_welford_init(fc_welford_state_t* state) {
+    if (state == NULL) {
+        return FC_ERR_INVALID_ARG;
+    }
+
+    state->count = 0;
+    state->mean  = 0.0;
+    state->m2    = 0.0;
+
+    return FC_OK;
+}
 
 /**
  * @brief Update statistics with a single value
@@ -120,7 +131,19 @@ fc_welford_update_batch(fc_welford_state_t* state, const double* values, size_t 
  * @note Thread-safe (read-only operation)
  * @note Returns 0.0 if no values have been processed
  */
-FC_API fc_status_t fc_welford_mean(const fc_welford_state_t* state, double* mean);
+static inline fc_status_t fc_welford_mean(const fc_welford_state_t* state, double* mean) {
+    if (state == NULL || mean == NULL) {
+        return FC_ERR_INVALID_ARG;
+    }
+
+    if (state->count == 0) {
+        *mean = 0.0;
+        return FC_OK;
+    }
+
+    *mean = state->mean;
+    return FC_OK;
+}
 
 /**
  * @brief Get current variance
@@ -140,8 +163,33 @@ FC_API fc_status_t fc_welford_mean(const fc_welford_state_t* state, double* mean
  * @note Thread-safe (read-only operation)
  * @note Returns 0.0 if insufficient data (count < 2 for sample variance)
  */
-FC_API fc_status_t
-fc_welford_variance(const fc_welford_state_t* state, double* variance, int sample);
+static inline fc_status_t fc_welford_variance(
+    const fc_welford_state_t* state,
+    double* variance,
+    int sample
+) {
+    if (state == NULL || variance == NULL) {
+        return FC_ERR_INVALID_ARG;
+    }
+
+    if (state->count == 0) {
+        *variance = 0.0;
+        return FC_OK;
+    }
+
+    if (sample && state->count < 2) {
+        *variance = 0.0;
+        return FC_OK;
+    }
+
+    if (sample) {
+        *variance = state->m2 / (state->count - 1);
+    } else {
+        *variance = state->m2 / state->count;
+    }
+
+    return FC_OK;
+}
 
 /**
  * @brief Get current standard deviation
@@ -161,7 +209,25 @@ fc_welford_variance(const fc_welford_state_t* state, double* variance, int sampl
  * @note Thread-safe (read-only operation)
  * @note Returns 0.0 if insufficient data (count < 2 for sample stddev)
  */
-FC_API fc_status_t fc_welford_stddev(const fc_welford_state_t* state, double* stddev, int sample);
+static inline fc_status_t fc_welford_stddev(
+    const fc_welford_state_t* state,
+    double* stddev,
+    int sample
+) {
+    if (state == NULL || stddev == NULL) {
+        return FC_ERR_INVALID_ARG;
+    }
+
+    double var         = 0.0;
+    fc_status_t status = fc_welford_variance(state, &var, sample);
+    if (status != FC_OK) {
+        *stddev = 0.0;
+        return status;
+    }
+
+    *stddev = sqrt(var);
+    return FC_OK;
+}
 
 /**
  * @brief Get current count
@@ -178,7 +244,14 @@ FC_API fc_status_t fc_welford_stddev(const fc_welford_state_t* state, double* st
  *
  * @note Thread-safe (read-only operation)
  */
-FC_API fc_status_t fc_welford_count(const fc_welford_state_t* state, size_t* count);
+static inline fc_status_t fc_welford_count(const fc_welford_state_t* state, size_t* count) {
+    if (state == NULL || count == NULL) {
+        return FC_ERR_INVALID_ARG;
+    }
+
+    *count = state->count;
+    return FC_OK;
+}
 
 /**
  * @brief Merge two Welford states
@@ -219,7 +292,9 @@ FC_API fc_status_t fc_welford_merge(fc_welford_state_t* state_a, const fc_welfor
  *
  * @note Thread-safe per instance
  */
-FC_API fc_status_t fc_welford_reset(fc_welford_state_t* state);
+static inline fc_status_t fc_welford_reset(fc_welford_state_t* state) {
+    return fc_welford_init(state);
+}
 
 /**
  * @brief Update multiple independent data streams in parallel (SIMD-optimized)

@@ -12,6 +12,7 @@
 
 #include "error.h"
 #include "platform.h"
+#include <math.h>
 
 FC_BEGIN_DECLS
 
@@ -37,7 +38,13 @@ typedef struct {
  * Time complexity: O(1)
  * Thread safety: Not thread-safe (caller must synchronize)
  */
-void fc_stats_moments_init(fc_moments_state_t* state);
+static inline void fc_stats_moments_init(fc_moments_state_t* state) {
+    state->n    = 0;
+    state->mean = 0.0;
+    state->m2   = 0.0;
+    state->m3   = 0.0;
+    state->m4   = 0.0;
+}
 
 /**
  * @brief Update moments with a single value
@@ -76,7 +83,18 @@ void fc_stats_moments_update_batch(fc_moments_state_t* state, const double* valu
  * Time complexity: O(1)
  * Thread safety: Thread-safe (read-only)
  */
-double fc_stats_moments_skewness(const fc_moments_state_t* state);
+static inline double fc_stats_moments_skewness(const fc_moments_state_t* state) {
+    if (state->n < 3) {
+        return NAN;
+    }
+
+    if (state->m2 == 0.0) {
+        return NAN;
+    }
+
+    double sqrt_m2 = sqrt(state->m2);
+    return sqrt((double) state->n) * state->m3 / (state->m2 * sqrt_m2);
+}
 
 /**
  * @brief Compute sample kurtosis from moments state
@@ -89,7 +107,17 @@ double fc_stats_moments_skewness(const fc_moments_state_t* state);
  * Time complexity: O(1)
  * Thread safety: Thread-safe (read-only)
  */
-double fc_stats_moments_kurtosis(const fc_moments_state_t* state);
+static inline double fc_stats_moments_kurtosis(const fc_moments_state_t* state) {
+    if (state->n < 4) {
+        return NAN;
+    }
+
+    if (state->m2 == 0.0) {
+        return NAN;
+    }
+
+    return (double) state->n * state->m4 / (state->m2 * state->m2);
+}
 
 /**
  * @brief Compute sample excess kurtosis from moments state
@@ -103,7 +131,13 @@ double fc_stats_moments_kurtosis(const fc_moments_state_t* state);
  * Time complexity: O(1)
  * Thread safety: Thread-safe (read-only)
  */
-double fc_stats_moments_excess_kurtosis(const fc_moments_state_t* state);
+static inline double fc_stats_moments_excess_kurtosis(const fc_moments_state_t* state) {
+    double kurt = fc_stats_moments_kurtosis(state);
+    if (isnan(kurt)) {
+        return NAN;
+    }
+    return kurt - 3.0;
+}
 
 /**
  * @brief Compute skewness for multiple groups in batch
