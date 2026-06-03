@@ -18,7 +18,9 @@ if(NOT TARGET bench_framework)
 
     target_link_libraries(bench_framework
         PUBLIC
-            finkit_stats_static
+            finkit_stats_static_base
+            ${MATRIX_STATIC_LIB}
+            ${PLATFORM_STATIC_LIB}
     )
 endif()
 
@@ -44,7 +46,9 @@ add_executable(stats_benchmarks
 target_link_libraries(stats_benchmarks
     PRIVATE
         bench_framework
-        finkit_stats_static
+        finkit_stats_static_base
+        ${MATRIX_STATIC_LIB}
+        ${PLATFORM_STATIC_LIB}
         m
 )
 

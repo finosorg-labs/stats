@@ -24,7 +24,9 @@ add_executable(stats_tests
 # Link with stats library
 target_link_libraries(stats_tests
     PRIVATE
-        finkit_stats_static
+        finkit_stats_static_base
+     ${MATRIX_STATIC_LIB}
+        ${PLATFORM_STATIC_LIB}
         m
 )
 

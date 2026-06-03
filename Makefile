@@ -77,8 +77,12 @@ qa-sanitizers: sanitizer-asan sanitizer-usan sanitizer-tsan sanitizer-msan
 
 linux:
 	@echo "==> Building Linux (native, $(BUILD_TYPE))"
-	@$(CMAKE) $(LINUX_CONFIG)
+	@$(CMAKE) -B $(LINUX_BUILD_DIR) \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 	@$(CMAKE) --build $(LINUX_BUILD_DIR) --parallel
+	@echo "==> Cleaning intermediate build artifacts"
+	@rm -f $(LINUX_BUILD_DIR)/libfinkit_stats_static_base.a
 
 windows:
 	@echo "==> Building Windows amd64 (cross-compile, $(BUILD_TYPE))"

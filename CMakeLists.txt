@@ -33,9 +33,22 @@ configure_file(
     @ONLY
 )
 
+# Detect platform for library paths
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+        set(STATS_BUILD_DIR "darwin_arm64")
+    else()
+        set(STATS_BUILD_DIR "darwin_x86_64")
+    endif()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(STATS_BUILD_DIR "linux_amd64")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(STATS_BUILD_DIR "windows_amd64")
+endif()
+
 # Define paths to prebuilt libraries
-set(MATRIX_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/matrix/build/linux_amd64/libfinkit_matrix_static.a)
-set(PLATFORM_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/build/linux_amd64/libfinkit_platform_static.a)
+set(MATRIX_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/matrix/build/${STATS_BUILD_DIR}/libfinkit_matrix_static.a)
+set(PLATFORM_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/build/${STATS_BUILD_DIR}/libfinkit_platform_static.a)
 
 # Stats module sources
 set(STATS_SOURCES
@@ -108,33 +121,101 @@ elseif(FC_SIMD_LEVEL STREQUAL "SSE42")
     set_source_files_properties(stats-c/winsorize.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
 endif()
 
-# Create static library
-add_library(finkit_stats_static STATIC $<TARGET_OBJECTS:finkit_stats>)
-target_include_directories(finkit_stats_static
+# Create base static library (without dependencies)
+add_library(finkit_stats_static_base STATIC $<TARGET_OBJECTS:finkit_stats>)
+target_include_directories(finkit_stats_static_base
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-# Link platform and matrix libraries
-target_link_libraries(finkit_stats_static PUBLIC
-    ${MATRIX_STATIC_LIB}
-    ${PLATFORM_STATIC_LIB}
-    m
+# Merge static libraries into a single library
+set(MERGED_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/${STATS_BUILD_DIR}/libfinkit_stats_static.a)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Windows: use lib.exe to merge libraries
+    add_custom_command(
+        OUTPUT ${MERGED_LIB_PATH}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/${STATS_BUILD_DIR}
+        COMMAND lib.exe /OUT:${MERGED_LIB_PATH}
+            $<TARGET_FILE:finkit_stats_static_base>
+            ${MATRIX_STATIC_LIB}
+          ${PLATFORM_STATIC_LIB}
+        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${PLATFORM_STATIC_LIB}
+        COMMENT "Merging static libraries into ${MERGED_LIB_PATH}"
+        VERBATIM
+    )
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    # macOS: use libtool to merge libraries
+    add_custom_command(
+        OUTPUT ${MERGED_LIB_PATH}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/${STATS_BUILD_DIR}
+        COMMAND libtool -static -o ${MERGED_LIB_PATH}
+            $<TARGET_FILE:finkit_stats_static_base>
+            ${MATRIX_STATIC_LIB}
+            ${PLATFORM_STATIC_LIB}
+            2>&1 | grep -v "warning duplicate member name" || true
+        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${PLATFORM_STATIC_LIB}
+        COMMENT "Merging static libraries into ${MERGED_LIB_PATH}"
+        VERBATIM
+    )
+else()
+    # Linux: use ar with MRI script to merge libraries
+    set(MRI_SCRIPT ${CMAKE_CURRENT_BINARY_DIR}/merge_libs.mri)
+    file(GENERATE OUTPUT ${MRI_SCRIPT} CONTENT
+"CREATE ${MERGED_LIB_PATH}
+ADDLIB $<TARGET_FILE:finkit_stats_static_base>
+ADDLIB ${MATRIX_STATIC_LIB}
+ADDLIB ${PLATFORM_STATIC_LIB}
+SAVE
+END
+")
+
+    add_custom_command(
+        OUTPUT ${MERGED_LIB_PATH}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/${STATS_BUILD_DIR}
+        COMMAND ${CMAKE_AR} -M < ${MRI_SCRIPT}
+        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${PLATFORM_STATIC_LIB} ${MRI_SCRIPT}
+        COMMENT "Merging static libraries into ${MERGED_LIB_PATH}"
+        VERBATIM
+    )
+endif()
+
+# Create custom target to trigger the merge
+add_custom_target(finkit_stats_static ALL
+    DEPENDS ${MERGED_LIB_PATH}
+    COMMAND ${CMAKE_COMMAND} -E echo "Merged library created at: ${MERGED_LIB_PATH}"
+)
+
+# Create interface library for linking
+add_library(finkit_stats_static_interface INTERFACE)
+target_include_directories(finkit_stats_static_interface
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(finkit_stats_static_interface
+    INTERFACE
+        m
+        ${MERGED_LIB_PATH}
 )
 
 # Create alias
-add_library(finkit::stats ALIAS finkit_stats_static)
+add_library(finkit::stats ALIAS finkit_stats_static_interface)
 
-# Install
-install(TARGETS finkit_stats_static
-    EXPORT finkit-stats-targets
-    ARCHIVE DESTINATION lib
+# Install merged static library
+install(FILES ${MERGED_LIB_PATH}
+    DESTINATION lib
 )
 
 install(DIRECTORY include/
     DESTINATION include/stats
     FILES_MATCHING PATTERN "*.h"
+)
+
+# Install interface library target
+install(TARGETS finkit_stats_static_interface
+    EXPORT finkit-stats-targets
 )
 
 install(EXPORT finkit-stats-targets
