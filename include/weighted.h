@@ -11,6 +11,7 @@
 #define FC_STATS_weighted_H
 
 #include "error.h"
+#include "fc_bigfloat.h"
 #include "platform.h"
 
 FC_BEGIN_DECLS
@@ -118,6 +119,65 @@ FC_API fc_status_t
 fc_stats_weighted_stddev_f64(const double* data, const double* weights, size_t n, double* stddev);
 
 /**
+ * @brief Compute weighted mean using fc_bigfloat accumulation
+ *
+ * Computes Σ(data[i] * weights[i]) / Σ(weights[i]) with arbitrary-precision
+ * intermediate products and sums. Set precision_bits to 0 to use the platform
+ * default precision.
+ *
+ * @param data Input array (must not be NULL, finite values only)
+ * @param weights Weight array (must not be NULL, finite and >= 0)
+ * @param n Number of elements (must be > 0)
+ * @param mean Pre-created output bigfloat (must not be NULL)
+ * @param precision_bits Precision in bits for intermediate values and output, or 0 for default
+ *
+ * @return FC_OK on success, error code on failure
+ *
+ * @note Thread-safe
+ */
+FC_API fc_status_t fc_stats_weighted_mean_bigfloat_f64(
+    const double* data,
+    const double* weights,
+    size_t n,
+    fc_bigfloat_t* mean,
+    fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Compute weighted population variance using fc_bigfloat accumulation
+ */
+FC_API fc_status_t fc_stats_weighted_variance_bigfloat_f64(
+    const double* data,
+    const double* weights,
+    size_t n,
+    fc_bigfloat_t* variance,
+    fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Compute weighted mean and population variance using fc_bigfloat accumulation
+ */
+FC_API fc_status_t fc_stats_weighted_mean_variance_bigfloat_f64(
+    const double* data,
+    const double* weights,
+    size_t n,
+    fc_bigfloat_t* mean,
+    fc_bigfloat_t* variance,
+    fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Compute weighted population standard deviation using fc_bigfloat accumulation
+ */
+FC_API fc_status_t fc_stats_weighted_stddev_bigfloat_f64(
+    const double* data,
+    const double* weights,
+    size_t n,
+    fc_bigfloat_t* stddev,
+    fc_uint64_t precision_bits
+);
+
+/**
  * @brief Batch compute weighted means for flat groups
  *
  * Processes flat data laid out as n_groups contiguous groups, each with
@@ -216,6 +276,58 @@ FC_API fc_status_t fc_stats_weighted_stddev_batch_f64(
     const double* weights,
     size_t n_groups,
     size_t group_size
+);
+
+/**
+ * @brief Batch compute weighted means using fc_bigfloat accumulation
+ *
+ * Each output handle must be pre-created by the caller. Set precision_bits to 0
+ * to use the platform default precision.
+ */
+FC_API fc_status_t fc_stats_weighted_mean_batch_bigfloat_f64(
+    fc_bigfloat_t* const* means,
+    const double* data,
+    const double* weights,
+    size_t n_groups,
+    size_t group_size,
+    fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Batch compute weighted population variances using fc_bigfloat accumulation
+ */
+FC_API fc_status_t fc_stats_weighted_variance_batch_bigfloat_f64(
+    fc_bigfloat_t* const* variances,
+    const double* data,
+    const double* weights,
+    size_t n_groups,
+    size_t group_size,
+    fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Batch compute weighted means and population variances using fc_bigfloat accumulation
+ */
+FC_API fc_status_t fc_stats_weighted_mean_variance_batch_bigfloat_f64(
+    fc_bigfloat_t* const* means,
+    fc_bigfloat_t* const* variances,
+    const double* data,
+    const double* weights,
+    size_t n_groups,
+    size_t group_size,
+    fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Batch compute weighted population standard deviations using fc_bigfloat accumulation
+ */
+FC_API fc_status_t fc_stats_weighted_stddev_batch_bigfloat_f64(
+    fc_bigfloat_t* const* stddevs,
+    const double* data,
+    const double* weights,
+    size_t n_groups,
+    size_t group_size,
+    fc_uint64_t precision_bits
 );
 
 FC_END_DECLS
