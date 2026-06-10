@@ -6,6 +6,7 @@
 #include "test_framework.h"
 #include "../include/weighted.h"
 #include <math.h>
+#include <stdint.h>
 
 #define TEST_TOLERANCE 1e-12
 
@@ -199,6 +200,16 @@ TEST(test_weighted_batch_nan_group) {
     ASSERT_EQ(status, FC_ERR_NAN_INPUT);
 }
 
+TEST(test_weighted_batch_dimension_overflow) {
+    double data[] = {1.0};
+    double weights[] = {1.0};
+    double means[1];
+
+    fc_status_t status = fc_stats_weighted_mean_batch_f64(means, data, weights, SIZE_MAX, 2);
+
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
 void register_weighted_tests(void) {
     RUN_TEST(test_weighted_mean_basic);
     RUN_TEST(test_weighted_variance_basic);
@@ -217,4 +228,5 @@ void register_weighted_tests(void) {
     RUN_TEST(test_weighted_batch_stddev);
     RUN_TEST(test_weighted_batch_invalid_zero_weight_group);
     RUN_TEST(test_weighted_batch_nan_group);
+    RUN_TEST(test_weighted_batch_dimension_overflow);
 }

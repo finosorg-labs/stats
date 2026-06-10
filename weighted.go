@@ -178,7 +178,7 @@ func validateWeightedBatch(data, weights []float64, nGroups, groupSize int) erro
 	if nGroups <= 0 || groupSize <= 0 {
 		return ErrInvalidArg
 	}
-	if len(data) != len(weights) || len(data) != nGroups*groupSize {
+	if len(data) != len(weights) || nGroups > len(data)/groupSize || len(data) != nGroups*groupSize {
 		return ErrInvalidArg
 	}
 	return nil
