@@ -63,6 +63,7 @@ set(STATS_SOURCES
     stats-c/ema.c
     stats-c/moments.c
     stats-c/zscore.c
+    stats-c/weighted.c
     stats-c/winsorize.c
 )
 
@@ -92,6 +93,7 @@ if(FC_SIMD_LEVEL STREQUAL "AVX512")
     set_source_files_properties(stats-c/ema.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
     set_source_files_properties(stats-c/moments.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
     set_source_files_properties(stats-c/zscore.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
+    set_source_files_properties(stats-c/weighted.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
     set_source_files_properties(stats-c/winsorize.c PROPERTIES COMPILE_FLAGS "${FC_AVX512_FLAGS}")
 elseif(FC_SIMD_LEVEL STREQUAL "AVX2")
     set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
@@ -105,6 +107,7 @@ elseif(FC_SIMD_LEVEL STREQUAL "AVX2")
     set_source_files_properties(stats-c/ema.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
     set_source_files_properties(stats-c/moments.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
     set_source_files_properties(stats-c/zscore.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
+    set_source_files_properties(stats-c/weighted.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
     set_source_files_properties(stats-c/winsorize.c PROPERTIES COMPILE_FLAGS "${FC_AVX2_FLAGS}")
 elseif(FC_SIMD_LEVEL STREQUAL "SSE42")
     set_source_files_properties(stats-c/mean_var.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
@@ -118,6 +121,7 @@ elseif(FC_SIMD_LEVEL STREQUAL "SSE42")
     set_source_files_properties(stats-c/ema.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
     set_source_files_properties(stats-c/moments.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
     set_source_files_properties(stats-c/zscore.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
+    set_source_files_properties(stats-c/weighted.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
     set_source_files_properties(stats-c/winsorize.c PROPERTIES COMPILE_FLAGS "${FC_SSE42_FLAGS}")
 endif()
 

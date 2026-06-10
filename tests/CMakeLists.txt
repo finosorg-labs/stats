@@ -18,6 +18,7 @@ add_executable(stats_tests
     test_ema.c
     test_moments.c
     test_zscore.c
+    test_weighted.c
     test_winsorize.c
 )
 

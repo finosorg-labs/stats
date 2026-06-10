@@ -17,6 +17,7 @@ extern void bench_ema_run(void);
 extern void bench_moments_run(void);
 extern void bench_zscore_run(void);
 extern void bench_correlation_run(void);
+extern void bench_weighted_run(void);
 extern void bench_winsorize_run(void);
 
 /**
@@ -34,5 +35,6 @@ void bench_stats_run(void) {
     bench_moments_run();
     bench_zscore_run();
     bench_correlation_run();
+    bench_weighted_run();
     bench_winsorize_run();
 }

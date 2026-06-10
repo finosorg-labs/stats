@@ -15,6 +15,7 @@
 #include "mean_var.h"
 #include "quantile.h"
 #include "rank.h"
+#include "weighted.h"
 #include "welford.h"
 #include "winsorize.h"
 

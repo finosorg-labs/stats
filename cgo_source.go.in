@@ -31,6 +31,7 @@ package stats
 #include <ema.h>
 #include <moments.h>
 #include <zscore.h>
+#include <weighted.h>
 #include <winsorize.h>
 
 // Platform sources (dependency)
@@ -60,6 +61,7 @@ package stats
 #include "stats-c/ema.c"
 #include "stats-c/moments.c"
 #include "stats-c/zscore.c"
+#include "stats-c/weighted.c"
 #include "stats-c/winsorize.c"
 
 */

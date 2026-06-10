@@ -17,6 +17,7 @@ extern void register_rank_tests(void);
 extern void register_ema_tests(void);
 extern void register_moments_tests(void);
 extern void register_zscore_tests(void);
+extern void register_weighted_tests(void);
 extern void register_winsorize_tests(void);
 
 /**
@@ -34,5 +35,6 @@ void register_stats_tests(void) {
     register_ema_tests();
     register_moments_tests();
     register_zscore_tests();
+    register_weighted_tests();
     register_winsorize_tests();
 }
