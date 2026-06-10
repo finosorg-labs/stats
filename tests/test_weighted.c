@@ -272,6 +272,105 @@ TEST(test_weighted_bigfloat_batch_mean) {
     fc_bigfloat_destroy(means[1]);
 }
 
+TEST(test_weighted_bigfloat_batch_variance) {
+    double data[] = {1.0, 2.0, 3.0, 10.0, 20.0, 30.0};
+    double weights[] = {1.0, 1.0, 2.0, 1.0, 2.0, 1.0};
+    fc_bigfloat_t* variances[2] = {NULL, NULL};
+    double variance0 = 0.0;
+    double variance1 = 0.0;
+
+    ASSERT_EQ(fc_bigfloat_create(&variances[0]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&variances[1]), FC_OK);
+
+    fc_status_t status = fc_stats_weighted_variance_batch_bigfloat_f64(variances, data, weights, 2, 3, 256);
+
+    ASSERT_EQ(status, FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(variances[0], &variance0), FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(variances[1], &variance1), FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(variance0, 0.6875, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(variance1, 50.0, TEST_TOLERANCE);
+
+    fc_bigfloat_destroy(variances[0]);
+    fc_bigfloat_destroy(variances[1]);
+}
+
+TEST(test_weighted_bigfloat_batch_mean_variance) {
+    double data[] = {1.0, 2.0, 3.0, 10.0, 20.0, 30.0};
+    double weights[] = {1.0, 1.0, 2.0, 1.0, 2.0, 1.0};
+    fc_bigfloat_t* means[2] = {NULL, NULL};
+    fc_bigfloat_t* variances[2] = {NULL, NULL};
+    double mean0 = 0.0;
+    double mean1 = 0.0;
+    double variance0 = 0.0;
+    double variance1 = 0.0;
+
+    ASSERT_EQ(fc_bigfloat_create(&means[0]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&means[1]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&variances[0]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&variances[1]), FC_OK);
+
+    fc_status_t status = fc_stats_weighted_mean_variance_batch_bigfloat_f64(means, variances, data, weights, 2, 3, 256);
+
+    ASSERT_EQ(status, FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(means[0], &mean0), FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(means[1], &mean1), FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(variances[0], &variance0), FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(variances[1], &variance1), FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(mean0, 2.25, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(mean1, 20.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(variance0, 0.6875, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(variance1, 50.0, TEST_TOLERANCE);
+
+    fc_bigfloat_destroy(means[0]);
+    fc_bigfloat_destroy(means[1]);
+    fc_bigfloat_destroy(variances[0]);
+    fc_bigfloat_destroy(variances[1]);
+}
+
+TEST(test_weighted_bigfloat_batch_stddev) {
+    double data[] = {1.0, 2.0, 3.0, 10.0, 20.0, 30.0};
+    double weights[] = {1.0, 1.0, 2.0, 1.0, 2.0, 1.0};
+    fc_bigfloat_t* stddevs[2] = {NULL, NULL};
+    double stddev0 = 0.0;
+    double stddev1 = 0.0;
+
+    ASSERT_EQ(fc_bigfloat_create(&stddevs[0]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&stddevs[1]), FC_OK);
+
+    fc_status_t status = fc_stats_weighted_stddev_batch_bigfloat_f64(stddevs, data, weights, 2, 3, 256);
+
+    ASSERT_EQ(status, FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(stddevs[0], &stddev0), FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(stddevs[1], &stddev1), FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(stddev0, sqrt(0.6875), TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(stddev1, sqrt(50.0), TEST_TOLERANCE);
+
+    fc_bigfloat_destroy(stddevs[0]);
+    fc_bigfloat_destroy(stddevs[1]);
+}
+
+TEST(test_weighted_bigfloat_batch_validation) {
+    double nan_data[] = {1.0, INFINITY, 3.0, 10.0, NAN, 30.0};
+    double inf_data[] = {1.0, INFINITY, 3.0, 10.0, 20.0, 30.0};
+    double data[] = {1.0, 2.0, 3.0, 10.0, 20.0, 30.0};
+    double weights[] = {1.0, 1.0, 2.0, 1.0, 2.0, 1.0};
+    double negative_weights[] = {1.0, 1.0, 2.0, 1.0, -2.0, 1.0};
+    fc_bigfloat_t* means[2] = {NULL, NULL};
+
+    ASSERT_EQ(fc_bigfloat_create(&means[0]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&means[1]), FC_OK);
+
+    ASSERT_EQ(fc_stats_weighted_mean_batch_bigfloat_f64(means, nan_data, weights, 2, 3, 256), FC_ERR_NAN_INPUT);
+    ASSERT_EQ(fc_stats_weighted_mean_batch_bigfloat_f64(means, inf_data, weights, 2, 3, 256), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_mean_batch_bigfloat_f64(means, data, negative_weights, 2, 3, 256), FC_ERR_INVALID_ARG);
+
+    fc_bigfloat_destroy(means[1]);
+    means[1] = NULL;
+    ASSERT_EQ(fc_stats_weighted_mean_batch_bigfloat_f64(means, nan_data, weights, 2, 3, 256), FC_ERR_INVALID_ARG);
+
+    fc_bigfloat_destroy(means[0]);
+}
+
 TEST(test_weighted_bigfloat_invalid_inputs) {
     double data[] = {1.0, 2.0, 3.0};
     double weights[] = {1.0, -1.0, 2.0};
@@ -307,5 +406,9 @@ void register_weighted_tests(void) {
     RUN_TEST(test_weighted_bigfloat_mean_variance);
     RUN_TEST(test_weighted_bigfloat_stddev);
     RUN_TEST(test_weighted_bigfloat_batch_mean);
+    RUN_TEST(test_weighted_bigfloat_batch_variance);
+    RUN_TEST(test_weighted_bigfloat_batch_mean_variance);
+    RUN_TEST(test_weighted_bigfloat_batch_stddev);
+    RUN_TEST(test_weighted_bigfloat_batch_validation);
     RUN_TEST(test_weighted_bigfloat_invalid_inputs);
 }
