@@ -4,3 +4,6 @@
 [submodule "modules/matrix"]
 	path = modules/matrix
 	url = https://github.com/finosorg-labs/matrix.git
+[submodule "modules/sort"]
+	path = modules/sort
+	url = https://github.com/finosorg-labs/sort.git

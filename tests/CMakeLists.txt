@@ -27,6 +27,7 @@ target_link_libraries(stats_tests
     PRIVATE
         finkit_stats_static_base
      ${MATRIX_STATIC_LIB}
+        ${SORT_STATIC_LIB}
         ${PLATFORM_STATIC_LIB}
         m
 )
@@ -41,6 +42,7 @@ target_include_directories(stats_tests
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/modules/platform/include
         ${CMAKE_SOURCE_DIR}/modules/matrix/include
+        ${CMAKE_SOURCE_DIR}/modules/sort/include
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

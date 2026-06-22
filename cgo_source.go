@@ -10,10 +10,12 @@ package stats
 #cgo CFLAGS: -I${SRCDIR}/include
 #cgo CFLAGS: -I${SRCDIR}/modules/platform/include
 #cgo CFLAGS: -I${SRCDIR}/modules/matrix/include
+#cgo CFLAGS: -I${SRCDIR}/modules/sort/include
 #cgo CFLAGS: -I${SRCDIR}/modules/platform/src
 #cgo CFLAGS: -I${SRCDIR}/src -O2 -Wall -std=c11 -D_POSIX_C_SOURCE=200112L -mavx2 
 #cgo LDFLAGS: ${SRCDIR}/modules/platform/build/linux_amd64/libfinkit_platform_static.a -lm -lgcov
 #cgo LDFLAGS: ${SRCDIR}/modules/matrix/build/linux_amd64/libfinkit_matrix_static.a -lm -lgcov
+#cgo LDFLAGS: ${SRCDIR}/modules/sort/build/linux_amd64/libfinkit_sort_static.a -lm -lgcov
 
 #include <fc_bignum_init.c>
 #include <fc_bigint.c>

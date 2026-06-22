@@ -49,6 +49,7 @@ endif()
 # Define paths to prebuilt libraries
 set(MATRIX_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/matrix/build/${STATS_BUILD_DIR}/libfinkit_matrix_static.a)
 set(PLATFORM_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/build/${STATS_BUILD_DIR}/libfinkit_platform_static.a)
+set(SORT_STATIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/modules/sort/build/${STATS_BUILD_DIR}/libfinkit_sort_static.a)
 
 # Stats module sources
 set(STATS_SOURCES
@@ -75,6 +76,7 @@ target_include_directories(finkit_stats
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/modules/platform/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/modules/matrix/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/modules/sort/include>
         $<INSTALL_INTERFACE:include>
 )
 
@@ -144,8 +146,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         COMMAND lib.exe /OUT:${MERGED_LIB_PATH}
             $<TARGET_FILE:finkit_stats_static_base>
             ${MATRIX_STATIC_LIB}
+            ${SORT_STATIC_LIB}
           ${PLATFORM_STATIC_LIB}
-        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${PLATFORM_STATIC_LIB}
+        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${SORT_STATIC_LIB} ${PLATFORM_STATIC_LIB}
         COMMENT "Merging static libraries into ${MERGED_LIB_PATH}"
         VERBATIM
     )
@@ -157,9 +160,10 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         COMMAND libtool -static -o ${MERGED_LIB_PATH}
             $<TARGET_FILE:finkit_stats_static_base>
             ${MATRIX_STATIC_LIB}
+            ${SORT_STATIC_LIB}
             ${PLATFORM_STATIC_LIB}
             2>&1 | grep -v "warning duplicate member name" || true
-        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${PLATFORM_STATIC_LIB}
+        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${SORT_STATIC_LIB} ${PLATFORM_STATIC_LIB}
         COMMENT "Merging static libraries into ${MERGED_LIB_PATH}"
         VERBATIM
     )
@@ -170,6 +174,7 @@ else()
 "CREATE ${MERGED_LIB_PATH}
 ADDLIB $<TARGET_FILE:finkit_stats_static_base>
 ADDLIB ${MATRIX_STATIC_LIB}
+ADDLIB ${SORT_STATIC_LIB}
 ADDLIB ${PLATFORM_STATIC_LIB}
 SAVE
 END
@@ -179,7 +184,7 @@ END
         OUTPUT ${MERGED_LIB_PATH}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/${STATS_BUILD_DIR}
         COMMAND ${CMAKE_AR} -M < ${MRI_SCRIPT}
-        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${PLATFORM_STATIC_LIB} ${MRI_SCRIPT}
+        DEPENDS finkit_stats_static_base ${MATRIX_STATIC_LIB} ${SORT_STATIC_LIB} ${PLATFORM_STATIC_LIB} ${MRI_SCRIPT}
         COMMENT "Merging static libraries into ${MERGED_LIB_PATH}"
         VERBATIM
     )

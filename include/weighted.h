@@ -330,6 +330,80 @@ FC_API fc_status_t fc_stats_weighted_stddev_batch_bigfloat_f64(
     fc_uint64_t precision_bits
 );
 
+/**
+ * @brief Compute weighted median for a single dataset
+ *
+ * Weighted median is the value at which cumulative weight reaches 50% of total weight.
+ * Unlike weighted mean, the median is robust against outliers and manipulation,
+ * making it ideal for aggregating prices from multiple exchanges.
+ *
+ * Algorithm: Sort values by magnitude, compute cumulative weights, find the first
+ * position where cumulative weight >= total_weight/2.
+ *
+ * Time complexity: O(n log n) due to sorting
+ * Space complexity: O(n) for temporary index array
+ *
+ * @param data Input values (e.g., prices from multiple exchanges)
+ * @param weights Corresponding weights (e.g., volume or credibility, must be >= 0)
+ * @param n Number of elements (must be > 0)
+ * @param result Output weighted median value (must not be NULL)
+ *
+ * @return FC_OK on success, error code on failure:
+ *         FC_ERR_INVALID_ARG: NULL pointer or n == 0
+ *         FC_ERR_NAN_INPUT: Data or weights contain NaN/Inf, or negative weights
+ *         FC_ERR_INVALID_ARG: All weights are zero
+ *         FC_ERR_OUT_OF_MEMORY: Memory allocation failed
+ *
+ * @note Thread-safe if different threads use different input arrays
+ *
+ * Example:
+ *   Exchange prices: {50000, 50050, 49900, 50020, 51000}
+ *   Volumes:         {100,   150,   120,   130,   10}
+ *   Result: ~50020 (anti-manipulation aggregation)
+ */
+FC_API fc_status_t
+fc_stats_weighted_median_f64(const double* data, const double* weights, size_t n, double* result);
+
+/**
+ * @brief Compute weighted median for multiple datasets in batch
+ *
+ * Batch processing for computing weighted medians across multiple independent datasets.
+ * Each dataset can have different size. Commonly used for computing mark prices
+ * across multiple trading contracts from multi-exchange data.
+ *
+ * Time complexity: O(sum of n_i log n_i) for all datasets
+ * Space complexity: O(max n_i) for temporary arrays
+ *
+ * @param data Concatenated array of all value arrays
+ * @param weights Concatenated array of all weight arrays
+ * @param offsets Array of starting offsets for each dataset (length = batch_size)
+ * @param sizes Array of sizes for each dataset (length = batch_size)
+ * @param batch_size Number of datasets (must be > 0)
+ * @param results Output array of weighted medians (must not be NULL, length = batch_size)
+ *
+ * @return FC_OK on success, error code on failure:
+ *         FC_ERR_INVALID_ARG: NULL pointer, batch_size == 0, or any dataset size == 0
+ *         FC_ERR_NAN_INPUT: Invalid data or weights in any dataset
+ *         FC_ERR_INVALID_ARG: All weights zero in any dataset
+ *         FC_ERR_OUT_OF_MEMORY: Memory allocation failed
+ *
+ * @note Each dataset is processed independently
+ * @note Thread-safe if different threads use different input arrays
+ *
+ * Example:
+ *   Dataset 0: data[0..2], weights[0..2], size=3
+ *   Dataset 1: data[3..7], weights[3..7], size=5
+ *   offsets = {0, 3}, sizes = {3, 5}, batch_size = 2
+ */
+FC_API fc_status_t fc_stats_weighted_median_batch_f64(
+    const double* data,
+    const double* weights,
+    const size_t* offsets,
+    const size_t* sizes,
+    size_t batch_size,
+    double* results
+);
+
 FC_END_DECLS
 
 #endif /* FC_STATS_weighted_H */
