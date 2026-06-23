@@ -162,9 +162,100 @@ static void run_weighted_batch_benchmarks(void) {
     }
 }
 
+static void bench_weighted_median_fn(void* user_data) {
+    weighted_bench_data_t* bd = (weighted_bench_data_t*)user_data;
+    double result;
+    fc_stats_weighted_median_f64(bd->data, bd->weights, bd->n, &result);
+}
+
+typedef struct {
+    double* data;
+    double* weights;
+    size_t* offsets;
+    size_t* sizes;
+    double* results;
+    size_t batch_size;
+} weighted_median_batch_bench_data_t;
+
+static void bench_weighted_median_batch_fn(void* user_data) {
+    weighted_median_batch_bench_data_t* bd = (weighted_median_batch_bench_data_t*)user_data;
+    fc_stats_weighted_median_batch_f64(
+        bd->data,
+        bd->weights,
+        bd->offsets,
+        bd->sizes,
+        bd->batch_size,
+        bd->results
+    );
+}
+
+static void run_weighted_median_batch_benchmarks(void) {
+    printf("\nWeighted Median Batch Benchmarks\n");
+    printf("------------------------------------------------------------\n");
+
+    struct {
+        const char* name;
+        size_t num_contracts;
+        size_t exchanges_per_contract;
+    } tests[] = {
+        {"WeightedMedianBatch/1000x5", 1000, 5},
+        {"WeightedMedianBatch/10000x5", 10000, 5},
+    };
+
+    for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+        size_t total_size = tests[i].num_contracts * tests[i].exchanges_per_contract;
+        double* data = (double*)malloc(total_size * sizeof(double));
+        double* weights = (double*)malloc(total_size * sizeof(double));
+        size_t* offsets = (size_t*)malloc(tests[i].num_contracts * sizeof(size_t));
+        size_t* sizes = (size_t*)malloc(tests[i].num_contracts * sizeof(size_t));
+        double* results = (double*)malloc(tests[i].num_contracts * sizeof(double));
+
+        if (data == NULL || weights == NULL || offsets == NULL || sizes == NULL || results == NULL) {
+            free(data);
+            free(weights);
+            free(offsets);
+            free(sizes);
+            free(results);
+            continue;
+        }
+
+        generate_weighted_data(data, weights, total_size);
+        for (size_t j = 0; j < tests[i].num_contracts; j++) {
+            offsets[j] = j * tests[i].exchanges_per_contract;
+            sizes[j] = tests[i].exchanges_per_contract;
+        }
+
+        weighted_median_batch_bench_data_t bench_data = {
+            data,
+            weights,
+            offsets,
+            sizes,
+            results,
+            tests[i].num_contracts,
+        };
+
+        fc_bench_config_t config = FC_BENCH_CONFIG_DEFAULT;
+        config.name = tests[i].name;
+        config.data_size = total_size * sizeof(double) * 2;
+        config.min_time_ms = 100.0;
+        config.quiet = 0;
+
+        fc_bench_result_t result;
+        fc_bench_run(&config, bench_weighted_median_batch_fn, &bench_data, &result);
+
+        free(data);
+        free(weights);
+        free(offsets);
+        free(sizes);
+        free(results);
+    }
+}
+
 void bench_weighted_run(void) {
     run_single_benchmarks("Weighted Mean Benchmarks", "WeightedMean", bench_weighted_mean_fn);
     run_single_benchmarks("Weighted Variance Benchmarks", "WeightedVariance", bench_weighted_variance_fn);
     run_single_benchmarks("Weighted Mean+Variance Benchmarks", "WeightedMeanVar", bench_weighted_mean_variance_fn);
     run_weighted_batch_benchmarks();
+    run_single_benchmarks("Weighted Median Benchmarks", "WeightedMedian", bench_weighted_median_fn);
+    run_weighted_median_batch_benchmarks();
 }

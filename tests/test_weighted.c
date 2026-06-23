@@ -384,6 +384,163 @@ TEST(test_weighted_bigfloat_invalid_inputs) {
     fc_bigfloat_destroy(mean);
 }
 
+TEST(test_weighted_median_basic) {
+    double values[] = {1.0, 2.0, 3.0, 4.0, 5.0};
+    double weights[] = {1.0, 1.0, 1.0, 1.0, 1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 5, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 3.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_skewed) {
+    double values[] = {100.0, 200.0, 300.0};
+    double weights[] = {10.0, 1.0, 1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 3, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 100.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_two_elements) {
+    double values[] = {10.0, 20.0};
+    double weights[] = {3.0, 1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 2, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 10.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_single_element) {
+    double values[] = {42.0};
+    double weights[] = {1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 1, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 42.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_unsorted) {
+    double values[] = {5.0, 1.0, 3.0, 4.0, 2.0};
+    double weights[] = {1.0, 1.0, 1.0, 1.0, 1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 5, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 3.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_zero_weights) {
+    double values[] = {1.0, 2.0, 3.0, 4.0, 5.0};
+    double weights[] = {0.0, 0.0, 1.0, 0.0, 0.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 5, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 3.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_error_zero_size) {
+    double values[] = {1.0};
+    double weights[] = {1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 0, &result);
+
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
+TEST(test_weighted_median_error_null_inputs) {
+    double values[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, 1.0, 1.0};
+    double result;
+
+    ASSERT_EQ(fc_stats_weighted_median_f64(NULL, weights, 3, &result), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_median_f64(values, NULL, 3, &result), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_median_f64(values, weights, 3, NULL), FC_ERR_INVALID_ARG);
+}
+
+TEST(test_weighted_median_error_all_weights_zero) {
+    double values[] = {1.0, 2.0, 3.0};
+    double weights[] = {0.0, 0.0, 0.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 3, &result);
+
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
+TEST(test_weighted_median_error_negative_weight) {
+    double values[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, -1.0, 1.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(values, weights, 3, &result);
+
+    ASSERT_EQ(status, FC_ERR_NAN_INPUT);
+}
+
+TEST(test_weighted_median_crypto_scenario) {
+    double exchange_prices[] = {50000.0, 50050.0, 49900.0, 50020.0, 51000.0};
+    double volumes[] = {100.0, 150.0, 120.0, 130.0, 10.0};
+    double result;
+
+    fc_status_t status = fc_stats_weighted_median_f64(exchange_prices, volumes, 5, &result);
+
+    ASSERT_EQ(status, FC_OK);
+    ASSERT_TRUE(result >= 49000.0 && result <= 52000.0);
+}
+
+TEST(test_weighted_median_batch_basic) {
+    double values[] = {1.0, 2.0, 3.0, 10.0, 20.0};
+    double weights[] = {1.0, 1.0, 1.0, 3.0, 1.0};
+    size_t offsets[] = {0, 3};
+    size_t sizes[] = {3, 2};
+    double results[2];
+
+    fc_status_t status = fc_stats_weighted_median_batch_f64(values, weights, offsets, sizes, 2, results);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(results[0], 2.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(results[1], 10.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_median_batch_error_zero_size) {
+    double values[] = {1.0, 2.0};
+    double weights[] = {1.0, 1.0};
+    size_t offsets[] = {0};
+    size_t sizes[] = {0};
+    double results[1];
+
+    fc_status_t status = fc_stats_weighted_median_batch_f64(values, weights, offsets, sizes, 1, results);
+
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
+TEST(test_weighted_median_batch_error_null_inputs) {
+    double values[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, 1.0, 1.0};
+    size_t offsets[] = {0};
+    size_t sizes[] = {3};
+    double results[1];
+
+    ASSERT_EQ(fc_stats_weighted_median_batch_f64(NULL, weights, offsets, sizes, 1, results), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_median_batch_f64(values, NULL, offsets, sizes, 1, results), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_median_batch_f64(values, weights, NULL, sizes, 1, results), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_median_batch_f64(values, weights, offsets, NULL, 1, results), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_median_batch_f64(values, weights, offsets, sizes, 1, NULL), FC_ERR_INVALID_ARG);
+}
+
 void register_weighted_tests(void) {
     RUN_TEST(test_weighted_mean_basic);
     RUN_TEST(test_weighted_variance_basic);
@@ -411,4 +568,18 @@ void register_weighted_tests(void) {
     RUN_TEST(test_weighted_bigfloat_batch_stddev);
     RUN_TEST(test_weighted_bigfloat_batch_validation);
     RUN_TEST(test_weighted_bigfloat_invalid_inputs);
+    RUN_TEST(test_weighted_median_basic);
+    RUN_TEST(test_weighted_median_skewed);
+    RUN_TEST(test_weighted_median_two_elements);
+    RUN_TEST(test_weighted_median_single_element);
+    RUN_TEST(test_weighted_median_unsorted);
+    RUN_TEST(test_weighted_median_zero_weights);
+    RUN_TEST(test_weighted_median_error_zero_size);
+    RUN_TEST(test_weighted_median_error_null_inputs);
+    RUN_TEST(test_weighted_median_error_all_weights_zero);
+    RUN_TEST(test_weighted_median_error_negative_weight);
+    RUN_TEST(test_weighted_median_crypto_scenario);
+    RUN_TEST(test_weighted_median_batch_basic);
+    RUN_TEST(test_weighted_median_batch_error_zero_size);
+    RUN_TEST(test_weighted_median_batch_error_null_inputs);
 }
