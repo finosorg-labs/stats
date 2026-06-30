@@ -17,6 +17,29 @@
 FC_BEGIN_DECLS
 
 /**
+ * @brief Compute weighted sum of a single array
+ *
+ * Computes Σ(data[i] * weights[i]) using Kahan compensated summation for
+ * improved numerical stability.
+ *
+ * Time complexity: O(n)
+ * Space complexity: O(1)
+ *
+ * @param data Input array (must not be NULL)
+ * @param weights Weight array (must not be NULL, all weights must be >= 0)
+ * @param n Number of elements (must be > 0)
+ * @param sum Output weighted sum value (must not be NULL)
+ *
+ * @return FC_OK on success, error code on failure
+ *
+ * @note Thread-safe
+ * @note Returns FC_ERR_NAN_INPUT if any data value or weight is NaN
+ * @note Returns FC_ERR_INVALID_ARG if weights contain negative values or infinite values
+ */
+FC_API fc_status_t
+fc_stats_weighted_sum_f64(const double* data, const double* weights, size_t n, double* sum);
+
+/**
  * @brief Compute weighted mean of a single array
  *
  * Computes Σ(data[i] * weights[i]) / Σ(weights[i]) using Kahan compensated
@@ -119,6 +142,30 @@ FC_API fc_status_t
 fc_stats_weighted_stddev_f64(const double* data, const double* weights, size_t n, double* stddev);
 
 /**
+ * @brief Compute weighted sum using fc_bigfloat accumulation
+ *
+ * Computes Σ(data[i] * weights[i]) with arbitrary-precision intermediate
+ * products and sums. Set precision_bits to 0 to use the platform default precision.
+ *
+ * @param data Input array (must not be NULL, finite values only)
+ * @param weights Weight array (must not be NULL, finite and >= 0)
+ * @param n Number of elements (must be > 0)
+ * @param sum Pre-created output bigfloat (must not be NULL)
+ * @param precision_bits Precision in bits for intermediate values and output, or 0 for default
+ *
+ * @return FC_OK on success, error code on failure
+ *
+ * @note Thread-safe
+ */
+FC_API fc_status_t fc_stats_weighted_sum_bigfloat_f64(
+    const double* data,
+    const double* weights,
+    size_t n,
+    fc_bigfloat_t* sum,
+    fc_uint64_t precision_bits
+);
+
+/**
  * @brief Compute weighted mean using fc_bigfloat accumulation
  *
  * Computes Σ(data[i] * weights[i]) / Σ(weights[i]) with arbitrary-precision
@@ -175,6 +222,33 @@ FC_API fc_status_t fc_stats_weighted_stddev_bigfloat_f64(
     size_t n,
     fc_bigfloat_t* stddev,
     fc_uint64_t precision_bits
+);
+
+/**
+ * @brief Batch compute weighted sums for flat groups
+ *
+ * Processes flat data laid out as n_groups contiguous groups, each with
+ * group_size elements. The weights array uses the same layout.
+ *
+ * Time complexity: O(n_groups * group_size)
+ * Space complexity: O(1)
+ *
+ * @param sums Output array of weighted sums (must not be NULL, size >= n_groups)
+ * @param data Flat input array (must not be NULL, size >= n_groups * group_size)
+ * @param weights Flat weight array (must not be NULL, size >= n_groups * group_size)
+ * @param n_groups Number of groups (must be > 0)
+ * @param group_size Number of elements per group (must be > 0)
+ *
+ * @return FC_OK on success, error code on failure
+ *
+ * @note Thread-safe
+ */
+FC_API fc_status_t fc_stats_weighted_sum_batch_f64(
+    double* sums,
+    const double* data,
+    const double* weights,
+    size_t n_groups,
+    size_t group_size
 );
 
 /**
@@ -276,6 +350,21 @@ FC_API fc_status_t fc_stats_weighted_stddev_batch_f64(
     const double* weights,
     size_t n_groups,
     size_t group_size
+);
+
+/**
+ * @brief Batch compute weighted sums using fc_bigfloat accumulation
+ *
+ * Each output handle must be pre-created by the caller. Set precision_bits to 0
+ * to use the platform default precision.
+ */
+FC_API fc_status_t fc_stats_weighted_sum_batch_bigfloat_f64(
+    fc_bigfloat_t* const* sums,
+    const double* data,
+    const double* weights,
+    size_t n_groups,
+    size_t group_size,
+    fc_uint64_t precision_bits
 );
 
 /**

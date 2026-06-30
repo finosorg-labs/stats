@@ -5,6 +5,66 @@ import (
 	"testing"
 )
 
+func TestWeightedSum(t *testing.T) {
+	data := []float64{1.0, 2.0, 3.0}
+	weights := []float64{1.0, 1.0, 2.0}
+
+	sum, err := WeightedSum(data, weights)
+	if err != nil {
+		t.Fatalf("WeightedSum failed: %v", err)
+	}
+	if !almostEqual(sum, 9.0, tolerance) {
+		t.Errorf("WeightedSum = %v, expected 9.0", sum)
+	}
+}
+
+func TestWeightedSumZeroWeights(t *testing.T) {
+	data := []float64{10.0, 20.0, 30.0}
+	weights := []float64{0.0, 1.0, 0.0}
+
+	sum, err := WeightedSum(data, weights)
+	if err != nil {
+		t.Fatalf("WeightedSum failed: %v", err)
+	}
+	if !almostEqual(sum, 20.0, tolerance) {
+		t.Errorf("WeightedSum = %v, expected 20.0", sum)
+	}
+}
+
+func TestWeightedSumAllZeroWeights(t *testing.T) {
+	data := []float64{1.0, 2.0, 3.0}
+	weights := []float64{0.0, 0.0, 0.0}
+
+	sum, err := WeightedSum(data, weights)
+	if err != nil {
+		t.Fatalf("WeightedSum failed: %v", err)
+	}
+	if !almostEqual(sum, 0.0, tolerance) {
+		t.Errorf("WeightedSum = %v, expected 0.0", sum)
+	}
+}
+
+func TestWeightedSumInvalidInputs(t *testing.T) {
+	data := []float64{1.0, 2.0, 3.0}
+	weights := []float64{1.0, 1.0, 1.0}
+
+	if _, err := WeightedSum(nil, nil); err != ErrInvalidArg {
+		t.Errorf("expected ErrInvalidArg for empty input, got %v", err)
+	}
+	if _, err := WeightedSum(data, weights[:2]); err != ErrInvalidArg {
+		t.Errorf("expected ErrInvalidArg for length mismatch, got %v", err)
+	}
+	if _, err := WeightedSum(data, []float64{1.0, -1.0, 1.0}); err != ErrInvalidArg {
+		t.Errorf("expected ErrInvalidArg for negative weight, got %v", err)
+	}
+	if _, err := WeightedSum([]float64{1.0, math.NaN(), 3.0}, weights); err != ErrNaNInput {
+		t.Errorf("expected ErrNaNInput for NaN data, got %v", err)
+	}
+	if _, err := WeightedSum(data, []float64{1.0, math.NaN(), 1.0}); err != ErrNaNInput {
+		t.Errorf("expected ErrNaNInput for NaN weight, got %v", err)
+	}
+}
+
 func TestWeightedMean(t *testing.T) {
 	data := []float64{1.0, 2.0, 3.0}
 	weights := []float64{1.0, 1.0, 2.0}
@@ -104,6 +164,14 @@ func TestWeightedBatch(t *testing.T) {
 	data := []float64{1.0, 2.0, 3.0, 10.0, 20.0, 30.0}
 	weights := []float64{1.0, 1.0, 2.0, 1.0, 2.0, 1.0}
 
+	sums, err := WeightedSumBatch(data, weights, 2, 3)
+	if err != nil {
+		t.Fatalf("WeightedSumBatch failed: %v", err)
+	}
+	if !almostEqual(sums[0], 9.0, tolerance) || !almostEqual(sums[1], 80.0, tolerance) {
+		t.Errorf("sums = %v, expected [9.0 80.0]", sums)
+	}
+
 	means, err := WeightedMeanBatch(data, weights, 2, 3)
 	if err != nil {
 		t.Fatalf("WeightedMeanBatch failed: %v", err)
@@ -143,6 +211,16 @@ func TestWeightedBatch(t *testing.T) {
 func TestWeightedBatchInvalidInputs(t *testing.T) {
 	data := []float64{1.0, 2.0, 3.0}
 	weights := []float64{1.0, 1.0, 1.0}
+
+	if _, err := WeightedSumBatch(data, weights, 0, 3); err != ErrInvalidArg {
+		t.Errorf("expected ErrInvalidArg for zero groups, got %v", err)
+	}
+	if _, err := WeightedSumBatch(data, weights, 1, 0); err != ErrInvalidArg {
+		t.Errorf("expected ErrInvalidArg for zero group size, got %v", err)
+	}
+	if _, err := WeightedSumBatch(data, weights, 2, 3); err != ErrInvalidArg {
+		t.Errorf("expected ErrInvalidArg for size mismatch, got %v", err)
+	}
 
 	if _, err := WeightedMeanBatch(data, weights, 0, 3); err != ErrInvalidArg {
 		t.Errorf("expected ErrInvalidArg for zero groups, got %v", err)

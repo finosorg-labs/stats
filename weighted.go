@@ -7,6 +7,26 @@ package stats
 import "C"
 import "unsafe"
 
+// WeightedSum computes the weighted sum of a float64 slice.
+func WeightedSum(data, weights []float64) (float64, error) {
+	if len(data) == 0 || len(data) != len(weights) {
+		return 0, ErrInvalidArg
+	}
+
+	var sum C.double
+	status := C.fc_stats_weighted_sum_f64(
+		(*C.double)(unsafe.Pointer(&data[0])),
+		(*C.double)(unsafe.Pointer(&weights[0])),
+		C.size_t(len(data)),
+		&sum,
+	)
+	if err := statusToError(status); err != nil {
+		return 0, err
+	}
+
+	return float64(sum), nil
+}
+
 // WeightedMean computes the weighted mean of a float64 slice.
 func WeightedMean(data, weights []float64) (float64, error) {
 	if len(data) == 0 || len(data) != len(weights) {
@@ -86,6 +106,27 @@ func WeightedStdDev(data, weights []float64) (float64, error) {
 	}
 
 	return float64(stddev), nil
+}
+
+// WeightedSumBatch computes weighted sums for flat groups.
+func WeightedSumBatch(data, weights []float64, nGroups, groupSize int) ([]float64, error) {
+	if err := validateWeightedBatch(data, weights, nGroups, groupSize); err != nil {
+		return nil, err
+	}
+
+	sums := make([]float64, nGroups)
+	status := C.fc_stats_weighted_sum_batch_f64(
+		(*C.double)(unsafe.Pointer(&sums[0])),
+		(*C.double)(unsafe.Pointer(&data[0])),
+		(*C.double)(unsafe.Pointer(&weights[0])),
+		C.size_t(nGroups),
+		C.size_t(groupSize),
+	)
+	if err := statusToError(status); err != nil {
+		return nil, err
+	}
+
+	return sums, nil
 }
 
 // WeightedMeanBatch computes weighted means for flat groups.

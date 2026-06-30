@@ -34,6 +34,12 @@ typedef struct {
     size_t group_size;
 } weighted_batch_bench_data_t;
 
+static void bench_weighted_sum_fn(void* user_data) {
+    weighted_bench_data_t* bd = (weighted_bench_data_t*)user_data;
+    double sum;
+    fc_stats_weighted_sum_f64(bd->data, bd->weights, bd->n, &sum);
+}
+
 static void bench_weighted_mean_fn(void* user_data) {
     weighted_bench_data_t* bd = (weighted_bench_data_t*)user_data;
     double mean;
@@ -252,6 +258,7 @@ static void run_weighted_median_batch_benchmarks(void) {
 }
 
 void bench_weighted_run(void) {
+    run_single_benchmarks("Weighted Sum Benchmarks", "WeightedSum", bench_weighted_sum_fn);
     run_single_benchmarks("Weighted Mean Benchmarks", "WeightedMean", bench_weighted_mean_fn);
     run_single_benchmarks("Weighted Variance Benchmarks", "WeightedVariance", bench_weighted_variance_fn);
     run_single_benchmarks("Weighted Mean+Variance Benchmarks", "WeightedMeanVar", bench_weighted_mean_variance_fn);

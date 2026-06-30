@@ -10,6 +10,97 @@
 
 #define TEST_TOLERANCE 1e-12
 
+TEST(test_weighted_sum_basic) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, 1.0, 2.0};
+    double sum;
+
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, 3, &sum);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(sum, 9.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_sum_zero_weights) {
+    double data[] = {10.0, 20.0, 30.0};
+    double weights[] = {0.0, 1.0, 0.0};
+    double sum;
+
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, 3, &sum);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(sum, 20.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_sum_all_zero_weights) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {0.0, 0.0, 0.0};
+    double sum;
+
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, 3, &sum);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(sum, 0.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_sum_negative_weight) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, -1.0, 2.0};
+    double sum;
+
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, 3, &sum);
+
+    ASSERT_EQ(status, FC_ERR_INVALID_ARG);
+}
+
+TEST(test_weighted_sum_nan_data) {
+    double data[] = {1.0, NAN, 3.0};
+    double weights[] = {1.0, 1.0, 2.0};
+    double sum;
+
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, 3, &sum);
+
+    ASSERT_EQ(status, FC_ERR_NAN_INPUT);
+}
+
+TEST(test_weighted_sum_nan_weight) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, NAN, 2.0};
+    double sum;
+
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, 3, &sum);
+
+    ASSERT_EQ(status, FC_ERR_NAN_INPUT);
+}
+
+TEST(test_weighted_sum_null_inputs) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, 1.0, 1.0};
+    double sum;
+
+    ASSERT_EQ(fc_stats_weighted_sum_f64(NULL, weights, 3, &sum), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_f64(data, NULL, 3, &sum), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_f64(data, weights, 3, NULL), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_f64(data, weights, 0, &sum), FC_ERR_INVALID_ARG);
+}
+
+TEST(test_weighted_sum_large_array) {
+    const size_t n = 10000;
+    double data[n];
+    double weights[n];
+    for (size_t i = 0; i < n; i++) {
+        data[i] = (double) i;
+        weights[i] = 1.0;
+    }
+
+    double sum;
+    fc_status_t status = fc_stats_weighted_sum_f64(data, weights, n, &sum);
+
+    ASSERT_EQ(status, FC_OK);
+    double expected = (double) n * (n - 1) / 2.0;
+    FC_TEST_ASSERT_DOUBLE_EQ(sum, expected, expected * 1e-10);
+}
+
 TEST(test_weighted_mean_basic) {
     double data[] = {1.0, 2.0, 3.0};
     double weights[] = {1.0, 1.0, 2.0};
@@ -127,6 +218,30 @@ TEST(test_weighted_nan_weight) {
     fc_status_t status = fc_stats_weighted_mean_f64(data, weights, 3, &mean);
 
     ASSERT_EQ(status, FC_ERR_NAN_INPUT);
+}
+
+TEST(test_weighted_sum_batch) {
+    double data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    double weights[] = {1.0, 1.0, 2.0, 2.0, 3.0, 1.0};
+    double sums[2];
+
+    fc_status_t status = fc_stats_weighted_sum_batch_f64(sums, data, weights, 2, 3);
+
+    ASSERT_EQ(status, FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(sums[0], 9.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(sums[1], 29.0, TEST_TOLERANCE);
+}
+
+TEST(test_weighted_sum_batch_null_inputs) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, 1.0, 1.0};
+    double sums[1];
+
+    ASSERT_EQ(fc_stats_weighted_sum_batch_f64(NULL, data, weights, 1, 3), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_batch_f64(sums, NULL, weights, 1, 3), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_batch_f64(sums, data, NULL, 1, 3), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_batch_f64(sums, data, weights, 0, 3), FC_ERR_INVALID_ARG);
+    ASSERT_EQ(fc_stats_weighted_sum_batch_f64(sums, data, weights, 1, 0), FC_ERR_INVALID_ARG);
 }
 
 TEST(test_weighted_batch_mean) {
@@ -248,6 +363,45 @@ TEST(test_weighted_bigfloat_stddev) {
     FC_TEST_ASSERT_DOUBLE_EQ(stddev_f64, sqrt(0.6875), TEST_TOLERANCE);
 
     fc_bigfloat_destroy(stddev);
+}
+
+TEST(test_weighted_bigfloat_sum) {
+    double data[] = {1.0, 2.0, 3.0};
+    double weights[] = {1.0, 1.0, 2.0};
+
+    fc_bigfloat_t* sum = NULL;
+    ASSERT_EQ(fc_bigfloat_create(&sum), FC_OK);
+
+    fc_status_t status = fc_stats_weighted_sum_bigfloat_f64(data, weights, 3, sum, 256);
+    ASSERT_EQ(status, FC_OK);
+
+    double result = 0.0;
+    ASSERT_EQ(fc_bigfloat_get_f64(sum, &result), FC_OK);
+    FC_TEST_ASSERT_DOUBLE_EQ(result, 9.0, TEST_TOLERANCE);
+
+    fc_bigfloat_destroy(sum);
+}
+
+TEST(test_weighted_bigfloat_batch_sum) {
+    double data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    double weights[] = {1.0, 1.0, 2.0, 2.0, 3.0, 1.0};
+
+    fc_bigfloat_t* sums[2];
+    ASSERT_EQ(fc_bigfloat_create(&sums[0]), FC_OK);
+    ASSERT_EQ(fc_bigfloat_create(&sums[1]), FC_OK);
+
+    fc_status_t status = fc_stats_weighted_sum_batch_bigfloat_f64(sums, data, weights, 2, 3, 256);
+    ASSERT_EQ(status, FC_OK);
+
+    double result0 = 0.0, result1 = 0.0;
+    ASSERT_EQ(fc_bigfloat_get_f64(sums[0], &result0), FC_OK);
+    ASSERT_EQ(fc_bigfloat_get_f64(sums[1], &result1), FC_OK);
+
+    FC_TEST_ASSERT_DOUBLE_EQ(result0, 9.0, TEST_TOLERANCE);
+    FC_TEST_ASSERT_DOUBLE_EQ(result1, 29.0, TEST_TOLERANCE);
+
+    fc_bigfloat_destroy(sums[0]);
+    fc_bigfloat_destroy(sums[1]);
 }
 
 TEST(test_weighted_bigfloat_batch_mean) {
@@ -542,6 +696,14 @@ TEST(test_weighted_median_batch_error_null_inputs) {
 }
 
 void register_weighted_tests(void) {
+    RUN_TEST(test_weighted_sum_basic);
+    RUN_TEST(test_weighted_sum_zero_weights);
+    RUN_TEST(test_weighted_sum_all_zero_weights);
+    RUN_TEST(test_weighted_sum_negative_weight);
+    RUN_TEST(test_weighted_sum_nan_data);
+    RUN_TEST(test_weighted_sum_nan_weight);
+    RUN_TEST(test_weighted_sum_null_inputs);
+    RUN_TEST(test_weighted_sum_large_array);
     RUN_TEST(test_weighted_mean_basic);
     RUN_TEST(test_weighted_variance_basic);
     RUN_TEST(test_weighted_mean_variance_combined);
@@ -553,6 +715,8 @@ void register_weighted_tests(void) {
     RUN_TEST(test_weighted_zero_length);
     RUN_TEST(test_weighted_nan_data);
     RUN_TEST(test_weighted_nan_weight);
+    RUN_TEST(test_weighted_sum_batch);
+    RUN_TEST(test_weighted_sum_batch_null_inputs);
     RUN_TEST(test_weighted_batch_mean);
     RUN_TEST(test_weighted_batch_variance);
     RUN_TEST(test_weighted_batch_mean_variance);
@@ -562,6 +726,8 @@ void register_weighted_tests(void) {
     RUN_TEST(test_weighted_batch_dimension_overflow);
     RUN_TEST(test_weighted_bigfloat_mean_variance);
     RUN_TEST(test_weighted_bigfloat_stddev);
+    RUN_TEST(test_weighted_bigfloat_sum);
+    RUN_TEST(test_weighted_bigfloat_batch_sum);
     RUN_TEST(test_weighted_bigfloat_batch_mean);
     RUN_TEST(test_weighted_bigfloat_batch_variance);
     RUN_TEST(test_weighted_bigfloat_batch_mean_variance);
