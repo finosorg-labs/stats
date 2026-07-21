@@ -11,17 +11,27 @@ package stats
 #cgo CFLAGS: -I${SRCDIR}/modules/platform/include
 #cgo CFLAGS: -I${SRCDIR}/modules/matrix/include
 #cgo CFLAGS: -I${SRCDIR}/modules/sort/include
-#cgo CFLAGS: -I${SRCDIR}/modules/platform/src
 #cgo CFLAGS: -I${SRCDIR}/src -O2 -Wall -std=c11 -D_POSIX_C_SOURCE=200112L -mavx2 
-#cgo LDFLAGS: ${SRCDIR}/modules/platform/build/linux_amd64/libfinkit_platform_static.a -lm -lgcov
-#cgo LDFLAGS: ${SRCDIR}/modules/matrix/build/linux_amd64/libfinkit_matrix_static.a -lm -lgcov
-#cgo LDFLAGS: ${SRCDIR}/modules/sort/build/linux_amd64/libfinkit_sort_static.a -lm -lgcov
 
-#include <fc_bignum_init.c>
-#include <fc_bigint.c>
-#include <fc_bigfloat.c>
-#include <fc_precision.c>
-#include <stats.h>
+#cgo linux,amd64   LDFLAGS: -L${SRCDIR}/modules/platform/build/linux_amd64 -lfinkit_platform_static -lm
+#cgo linux,arm64   LDFLAGS: -L${SRCDIR}/modules/platform/build/linux_arm64 -lfinkit_platform_static -lm
+#cgo darwin,amd64  LDFLAGS: -L${SRCDIR}/modules/platform/build/darwin_amd64 -lfinkit_platform_static -lm
+#cgo darwin,arm64  LDFLAGS: -L${SRCDIR}/modules/platform/build/darwin_arm64 -lfinkit_platform_static -lm
+#cgo windows,amd64 LDFLAGS: -L${SRCDIR}/modules/platform/build/windows_amd64 -lfinkit_platform_static -lm
+
+#cgo linux,amd64   LDFLAGS: -L${SRCDIR}/modules/matrix/build/linux_amd64 -lfinkit_matrix_static -lm
+#cgo linux,arm64   LDFLAGS: -L${SRCDIR}/modules/matrix/build/linux_arm64 -lfinkit_matrix_static -lm
+#cgo darwin,amd64  LDFLAGS: -L${SRCDIR}/modules/matrix/build/darwin_amd64 -lfinkit_matrix_static -lm
+#cgo darwin,arm64  LDFLAGS: -L${SRCDIR}/modules/matrix/build/darwin_arm64 -lfinkit_matrix_static -lm
+#cgo windows,amd64 LDFLAGS: -L${SRCDIR}/modules/matrix/build/windows_amd64 -lfinkit_matrix_static -lm
+
+#cgo linux,amd64   LDFLAGS: -L${SRCDIR}/modules/sort/build/linux_amd64 -lfinkit_sort_static -lm
+#cgo linux,arm64   LDFLAGS: -L${SRCDIR}/modules/sort/build/linux_arm64 -lfinkit_sort_static -lm
+#cgo darwin,amd64  LDFLAGS: -L${SRCDIR}/modules/sort/build/darwin_amd64 -lfinkit_sort_static -lm
+#cgo darwin,arm64  LDFLAGS: -L${SRCDIR}/modules/sort/build/darwin_arm64 -lfinkit_sort_static -lm
+#cgo windows,amd64 LDFLAGS: -L${SRCDIR}/modules/sort/build/windows_amd64 -lfinkit_sort_static -lm
+
+
 #include <mean_var.h>
 #include <kahan_sum.h>
 #include <welford.h>
@@ -36,20 +46,6 @@ package stats
 #include <weighted.h>
 #include <winsorize.h>
 
-// Platform sources (dependency)
-#include "modules/platform/src/simd_detect.c"
-#include "modules/platform/src/mem_aligned.c"
-#include "modules/platform/src/error.c"
-#include "modules/platform/src/fc_init.c"
-
-// Platform-specific sources
-#if defined(__linux__)
-  #include "modules/platform/src/platform_linux.c"
-#elif defined(__APPLE__)
-  #include "modules/platform/src/platform_macos.c"
-#elif defined(_WIN32)
-  #include "modules/platform/src/platform_win.c"
-#endif
 
 // Stats sources
 #include "stats-c/mean_var.c"

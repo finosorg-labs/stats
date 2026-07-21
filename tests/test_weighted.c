@@ -386,7 +386,7 @@ TEST(test_weighted_bigfloat_batch_sum) {
     double data[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
     double weights[] = {1.0, 1.0, 2.0, 2.0, 3.0, 1.0};
 
-    fc_bigfloat_t* sums[2];
+    fc_bigfloat_t* sums[2] = {NULL, NULL};
     ASSERT_EQ(fc_bigfloat_create(&sums[0]), FC_OK);
     ASSERT_EQ(fc_bigfloat_create(&sums[1]), FC_OK);
 

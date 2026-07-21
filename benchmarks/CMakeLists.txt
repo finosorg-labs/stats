@@ -16,14 +16,6 @@ if(NOT TARGET bench_framework)
             ${CMAKE_SOURCE_DIR}/modules/matrix/include
             ${CMAKE_SOURCE_DIR}/modules/sort/include
     )
-
-    target_link_libraries(bench_framework
-        PUBLIC
-            finkit_stats_static_base
-            ${MATRIX_STATIC_LIB}
-            ${SORT_STATIC_LIB}
-            ${PLATFORM_STATIC_LIB}
-    )
 endif()
 
 # Benchmark executable
@@ -45,14 +37,11 @@ add_executable(stats_benchmarks
     bench_winsorize.c
 )
 
-# Link with benchmark framework and stats library
+# Link with benchmark framework and merged stats library
 target_link_libraries(stats_benchmarks
     PRIVATE
         bench_framework
-        finkit_stats_static_base
-        ${MATRIX_STATIC_LIB}
-        ${SORT_STATIC_LIB}
-        ${PLATFORM_STATIC_LIB}
+        finkit_stats_static_interface
         m
 )
 

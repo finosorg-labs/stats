@@ -22,13 +22,10 @@ add_executable(stats_tests
     test_winsorize.c
 )
 
-# Link with stats library
+# Link with merged stats library (includes all dependencies)
 target_link_libraries(stats_tests
     PRIVATE
-        finkit_stats_static_base
-     ${MATRIX_STATIC_LIB}
-        ${SORT_STATIC_LIB}
-        ${PLATFORM_STATIC_LIB}
+        finkit_stats_static_interface
         m
 )
 
