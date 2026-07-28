@@ -98,7 +98,7 @@ go:
 	@echo "==> Building Go module with lib (verify compilation)"
 	@CGO_CFLAGS_ALLOW="-m(avx2|avx512f|avx512dq|fma|sse4\.2)" go build -tags lib ./...
 
-test: linux
+test:
 	@echo "==> Rebuilding with coverage enabled"
 	@$(CMAKE) $(COVERAGE_CONFIG)
 	@$(CMAKE) --build $(LINUX_BUILD_DIR) --parallel
@@ -114,7 +114,7 @@ bench:
 		-G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DFC_BUILD_TESTS=OFF \
-		-DFC_BUILD_BENCHMARKS=ON \
+		-DFC_BUILD_BENCHMARKS=ON
 	@$(CMAKE) --build $(LINUX_BUILD_DIR) --parallel
 	@echo "==> Running C benchmarks"
 	@if [ -f $(LINUX_BUILD_DIR)/benchmarks/stats_benchmarks ]; then \
