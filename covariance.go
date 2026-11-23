@@ -2,7 +2,6 @@ package stats
 
 /*
 #include "covariance.h"
-#include "modules/platform/include/error.h"
 #include <stdlib.h>
 */
 import "C"
