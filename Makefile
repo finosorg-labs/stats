@@ -287,6 +287,24 @@ sync:
 	}; \
 	clone_submodule ".gitmodules" ""'
 	@echo "==> Submodules synced successfully (build + include only, recursive)"
+	@echo ""
+	@echo "==> Copying to prebuilt directory for distribution"
+	@mkdir -p prebuilt
+	@for submod in modules/*; do \
+		if [ -d "$$submod" ]; then \
+			submod_name=$$(basename $$submod); \
+			echo "  Processing $$submod_name"; \
+			if [ -d "$$submod/include" ]; then \
+				mkdir -p "prebuilt/$$submod_name/include"; \
+				cp -r "$$submod/include"/* "prebuilt/$$submod_name/include/" 2>/dev/null || true; \
+			fi; \
+			if [ -d "$$submod/build" ]; then \
+				mkdir -p "prebuilt/$$submod_name/build"; \
+				cp -r "$$submod/build"/* "prebuilt/$$submod_name/build/" 2>/dev/null || true; \
+			fi; \
+		fi; \
+	done
+	@echo "==> Prebuilt files ready for distribution"
 
 help:
 	@echo "codec Makefile - Build and Test Targets"
